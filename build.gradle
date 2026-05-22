@@ -5,15 +5,22 @@ plugins {
 group = 'org.fitory'
 version = '1.0-SNAPSHOT'
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation('tools.jackson.core:jackson-databind:3.1.2')
+    implementation project(':xpring')
+    implementation 'tools.jackson.core:jackson-databind:3.1.2'
+    compileOnly 'org.projectlombok:lombok:1.18.32'
+    annotationProcessor 'org.projectlombok:lombok:1.18.32'
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
-
 }
 
 test {
