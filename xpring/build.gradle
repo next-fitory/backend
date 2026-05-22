@@ -10,10 +10,10 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:11.0.12'
     implementation('tools.jackson.core:jackson-databind:3.1.2')
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
-
 }
 
 test {
