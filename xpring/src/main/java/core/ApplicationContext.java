@@ -1,5 +1,8 @@
 package core;
 
+import log.Logger;
+import log.XpringLoggerFactory;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -7,12 +10,16 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ApplicationContext implements BeanFactory {
+    private static final Logger log = XpringLoggerFactory.getLogger(ApplicationContext.class);
+
     private final Map<String, Object> beansByName = new LinkedHashMap<>();
     private final Map<Class<?>, List<Object>> beansByType = new LinkedHashMap<>();
 
     public ApplicationContext(String basePackage) {
+        log.info("Scanning components in package: {}", basePackage);
         ComponentScanner scanner = new ComponentScanner();
         Set<Class<?>> classes = scanner.scan(basePackage);
+        log.info("Found {} component class(es)", classes.size());
 
         List<BeanDefinition> definitions = classes.stream()
                 .map(BeanDefinition::new)
@@ -22,9 +29,11 @@ public class ApplicationContext implements BeanFactory {
         List<BeanDefinition> sorted = graph.topologicallySorted();
 
         for (BeanDefinition def : sorted) {
+            log.debug("Creating bean: {}", def.getName());
             Object bean = createBean(def);
             registerBean(def.getName(), bean);
         }
+        log.info("Initialized {} bean(s)", beansByName.size());
     }
 
     private Object createBean(BeanDefinition def) {

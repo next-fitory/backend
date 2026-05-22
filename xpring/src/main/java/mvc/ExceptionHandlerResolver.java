@@ -1,6 +1,8 @@
 package mvc;
 
 import core.BeanFactory;
+import log.Logger;
+import log.XpringLoggerFactory;
 import mvc.annotation.ControllerAdvice;
 import mvc.annotation.ExceptionHandler;
 
@@ -12,6 +14,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ExceptionHandlerResolver {
+    private static final Logger log = XpringLoggerFactory.getLogger(ExceptionHandlerResolver.class);
+
     private final Map<Class<? extends Throwable>, HandlerEntry> handlers = new LinkedHashMap<>();
 
     public ExceptionHandlerResolver(BeanFactory beanFactory) {
@@ -26,28 +30,33 @@ public class ExceptionHandlerResolver {
             method.setAccessible(true);
             for (Class<? extends Throwable> exType : method.getAnnotation(ExceptionHandler.class).value()) {
                 handlers.put(exType, new HandlerEntry(advice, method));
+                log.debug("Registered exception handler: {} -> {}.{}()",
+                        exType.getSimpleName(), advice.getClass().getSimpleName(), method.getName());
             }
         }
     }
 
-    /**
-     * @return 처리됐으면 true, 핸들러 없으면 false
-     */
     public boolean resolve(Exception exception, HttpServletRequest req, HttpServletResponse resp) {
         HandlerEntry entry = findEntry(exception.getClass());
-        if (entry == null) return false;
+        if (entry == null) {
+            log.warn("No exception handler found for: {} - {}",
+                    exception.getClass().getSimpleName(), exception.getMessage());
+            return false;
+        }
 
+        log.warn("Handling exception: {} - {}",
+                exception.getClass().getSimpleName(), exception.getMessage());
         try {
             Object result = invoke(entry, exception, req, resp);
             ResponseWriter.write(result, resp);
             return true;
         } catch (Exception invokeEx) {
+            log.error("ExceptionHandler execution failed", invokeEx);
             throw new RuntimeException("ExceptionHandler execution failed", invokeEx);
         }
     }
 
     private HandlerEntry findEntry(Class<?> exType) {
-        // 예외 클래스 계층을 올라가며 가장 구체적인 핸들러 탐색
         while (exType != null && exType != Object.class) {
             HandlerEntry entry = handlers.get(exType);
             if (entry != null) return entry;

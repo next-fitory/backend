@@ -2,20 +2,20 @@ package mvc;
 
 import core.BeanFactory;
 import core.annotation.RestController;
+import log.Logger;
+import log.XpringLoggerFactory;
 import mvc.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 
 public class HandlerMapping {
+    private static final Logger log = XpringLoggerFactory.getLogger(HandlerMapping.class);
+
     private final List<HandlerMethod> handlers = new ArrayList<>();
     private final Map<String, HandlerExecution> routeCache = new ConcurrentHashMap<>();
 
@@ -61,6 +61,9 @@ public class HandlerMapping {
     private void register(Object controller, Method method, HttpMethod httpMethod, String path) {
         method.setAccessible(true);
         handlers.add(new HandlerMethod(controller, method, httpMethod, path));
+        log.info("Mapped {} {} -> {}.{}()",
+                httpMethod, path,
+                controller.getClass().getSimpleName(), method.getName());
     }
 
     public Optional<HandlerExecution> getHandler(HttpServletRequest req) {

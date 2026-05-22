@@ -1,0 +1,20 @@
+<configuration>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %highlight(%-5level) [%thread] %cyan(%logger{20}) - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 프레임워크 패키지는 DEBUG까지 -->
+    <logger name="boot"   level="DEBUG"/>
+    <logger name="core"   level="DEBUG"/>
+    <logger name="mvc"    level="DEBUG"/>
+    <logger name="server" level="DEBUG"/>
+
+    <!-- 애플리케이션 코드는 INFO -->
+    <logger name="org.fitory" level="INFO"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>
