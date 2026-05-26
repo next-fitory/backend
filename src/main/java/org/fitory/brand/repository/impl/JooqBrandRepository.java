@@ -1,9 +1,9 @@
 package org.fitory.brand.repository.impl;
 
 import core.annotation.Repository;
-import lombok.RequiredArgsConstructor;
 import org.fitory.brand.domain.Brand;
 import org.fitory.brand.repository.BrandRepository;
+import org.fitory.infra.DatabaseConfig;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 
@@ -15,10 +15,13 @@ import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.table;
 
 @Repository
-@RequiredArgsConstructor
 public class JooqBrandRepository implements BrandRepository {
     private static final String TABLE = "brands";
     private final DSLContext dsl;
+
+    public JooqBrandRepository(DatabaseConfig databaseConfig) {
+        this.dsl = databaseConfig.dsl();
+    }
 
     @Override
     public Brand save(Brand brand) {
@@ -91,12 +94,12 @@ public class JooqBrandRepository implements BrandRepository {
 
     private Brand toBrand(Record record) {
         return Brand.builder()
-                .id(record.get(field("id", Long.class)))
-                .name(record.get(field("name", String.class)))
-                .imageUrl(record.get(field("image_url", String.class)))
-                .createdAt(record.get(field("created_at", LocalDateTime.class)))
-                .updatedAt(record.get(field("updated_at", LocalDateTime.class)))
-                .deleted(record.get(field("deleted", Boolean.class)))
+                .id(record.get("id", Long.class))
+                .name(record.get("name", String.class))
+                .imageUrl(record.get("image_url", String.class))
+                .createdAt(record.get("created_at", LocalDateTime.class))
+                .updatedAt(record.get("updated_at", LocalDateTime.class))
+                .deleted(record.get("deleted", Boolean.class))
                 .build();
     }
 }
