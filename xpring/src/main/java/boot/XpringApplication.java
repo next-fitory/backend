@@ -1,6 +1,7 @@
 package boot;
 
 import core.ApplicationContext;
+import core.ConfigurationAdapter;
 import jakarta.servlet.Filter;
 import log.Logger;
 import log.XpringLoggerFactory;
@@ -24,10 +25,14 @@ public final class XpringApplication {
 
         log.info("Starting Xpring application: {}", primarySource.getSimpleName());
 
-        // 1. 빈 컨텍스트 생성
+        // 1. application.yml 로드
+        ConfigurationAdapter.loadFromClasspath("application.yml");
+        log.info("Loaded application configuration");
+
+        // 2. 빈 컨텍스트 생성
         ApplicationContext context = new ApplicationContext(primarySource.getPackageName());
 
-        // 2. ApplicationRunner 빈 실행
+        // 3. ApplicationRunner 빈 실행
         List<ApplicationRunner> runners = context.getBeansOfType(ApplicationRunner.class);
         if (!runners.isEmpty()) {
             log.info("Running {} ApplicationRunner(s)", runners.size());
