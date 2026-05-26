@@ -8,8 +8,10 @@ import mvc.annotation.ExceptionHandler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -37,23 +39,32 @@ public class ExceptionHandlerResolver {
     }
 
     public boolean resolve(Exception exception, HttpServletRequest req, HttpServletResponse resp) {
-        HandlerEntry entry = findEntry(exception.getClass());
+        Throwable cause = unwrap(exception);
+        HandlerEntry entry = findEntry(cause.getClass());
         if (entry == null) {
             log.warn("No exception handler found for: {} - {}",
-                    exception.getClass().getSimpleName(), exception.getMessage());
+                    cause.getClass().getSimpleName(), cause.getMessage());
             return false;
         }
 
         log.warn("Handling exception: {} - {}",
-                exception.getClass().getSimpleName(), exception.getMessage());
+                cause.getClass().getSimpleName(), cause.getMessage());
         try {
-            Object result = invoke(entry, exception, req, resp);
+            Object result = invoke(entry, cause, req, resp);
             ResponseWriter.write(result, resp);
             return true;
         } catch (Exception invokeEx) {
             log.error("ExceptionHandler execution failed", invokeEx);
             throw new RuntimeException("ExceptionHandler execution failed", invokeEx);
         }
+    }
+
+    private Throwable unwrap(Throwable t) {
+        while (t.getCause() != null &&
+                (t instanceof InvocationTargetException || t instanceof UndeclaredThrowableException)) {
+            t = t.getCause();
+        }
+        return t;
     }
 
     private HandlerEntry findEntry(Class<?> exType) {
@@ -65,7 +76,7 @@ public class ExceptionHandlerResolver {
         return null;
     }
 
-    private Object invoke(HandlerEntry entry, Exception exception,
+    private Object invoke(HandlerEntry entry, Throwable exception,
                           HttpServletRequest req, HttpServletResponse resp) throws Exception {
         Parameter[] params = entry.method().getParameters();
         Object[] args = new Object[params.length];
