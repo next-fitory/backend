@@ -1,10 +1,9 @@
 package org.fitory.exception;
 
-import mvc.HttpStatus;
 import mvc.ResponseEntity;
 import mvc.annotation.ControllerAdvice;
 import mvc.annotation.ExceptionHandler;
-import org.fitory.product.ProductNotFoundException;
+import org.fitory.example.ProductNotFoundException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
