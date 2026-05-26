@@ -3,6 +3,7 @@ package org.fitory.user.service.impl;
 import core.annotation.Service;
 import lombok.RequiredArgsConstructor;
 import org.fitory.user.domain.User;
+import org.mindrot.jbcrypt.BCrypt;
 import org.fitory.user.dto.CreateUserRequest;
 import org.fitory.user.dto.UpdateUserRequest;
 import org.fitory.user.dto.UserResponse;
@@ -46,10 +47,14 @@ public class UserServiceImpl implements UserService {
         if (request.name() == null || request.name().isBlank()) {
             throw new IllegalArgumentException("Name must not be blank");
         }
+        if (request.password() == null || request.password().isBlank()) {
+            throw new IllegalArgumentException("Password must not be blank");
+        }
         LocalDateTime now = LocalDateTime.now();
         return UserResponse.of(userRepository.save(User.builder()
                 .email(request.email())
                 .name(request.name())
+                .password(BCrypt.hashpw(request.password(), BCrypt.gensalt()))
                 .createdAt(now)
                 .updatedAt(now)
                 .deleted(false)

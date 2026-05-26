@@ -32,6 +32,7 @@ public class JooqUserRepository implements UserRepository {
         Record record = dsl.insertInto(table(TABLE))
                 .set(field("email"), user.getEmail())
                 .set(field("name"), user.getName())
+                .set(field("password"), user.getPassword())
                 .set(field("created_at"), user.getCreatedAt())
                 .set(field("updated_at"), user.getUpdatedAt())
                 .set(field("deleted"), user.isDeleted())
@@ -56,6 +57,15 @@ public class JooqUserRepository implements UserRepository {
         return dsl.select()
                 .from(table(TABLE))
                 .where(field("id").eq(id).and(field("deleted", Boolean.class).isFalse()))
+                .fetchOptional()
+                .map(this::toUser);
+    }
+
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return dsl.select()
+                .from(table(TABLE))
+                .where(field("email").eq(email).and(field("deleted", Boolean.class).isFalse()))
                 .fetchOptional()
                 .map(this::toUser);
     }
@@ -93,6 +103,7 @@ public class JooqUserRepository implements UserRepository {
                 .id(record.get("id", Long.class))
                 .email(record.get("email", String.class))
                 .name(record.get("name", String.class))
+                .password(record.get("password", String.class))
                 .createdAt(record.get("created_at", LocalDateTime.class))
                 .updatedAt(record.get("updated_at", LocalDateTime.class))
                 .deleted(record.get("deleted", Boolean.class))

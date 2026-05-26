@@ -3,50 +3,57 @@ package mvc;
 public class ResponseEntity<T> {
     private final HttpStatus status;
     private final T body;
+    private final String location;
 
-    private ResponseEntity(HttpStatus status, T body) {
+    private ResponseEntity(HttpStatus status, T body, String location) {
         this.status = status;
         this.body = body;
+        this.location = location;
     }
 
     // --- 정적 팩토리 ---
 
     public static <T> ResponseEntity<T> ok(T body) {
-        return new ResponseEntity<>(HttpStatus.OK, body);
+        return new ResponseEntity<>(HttpStatus.OK, body, null);
     }
 
     public static <T> ResponseEntity<T> created(T body) {
-        return new ResponseEntity<>(HttpStatus.CREATED, body);
+        return new ResponseEntity<>(HttpStatus.CREATED, body, null);
     }
 
     public static ResponseEntity<Void> noContent() {
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT, null);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT, null, null);
+    }
+
+    public static ResponseEntity<Void> redirect(String location) {
+        return new ResponseEntity<>(HttpStatus.FOUND, null, location);
     }
 
     public static <T> ResponseEntity<T> badRequest(T body) {
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST, body);
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST, body, null);
     }
 
     public static <T> ResponseEntity<T> notFound(T body) {
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND, body);
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND, body, null);
     }
 
     public static <T> ResponseEntity<T> unauthorized(T body) {
-        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED, body);
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED, body, null);
     }
 
     public static <T> ResponseEntity<T> forbidden(T body) {
-        return new ResponseEntity<>(HttpStatus.FORBIDDEN, body);
+        return new ResponseEntity<>(HttpStatus.FORBIDDEN, body, null);
     }
 
     public static <T> ResponseEntity<T> internalServerError(T body) {
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR, body);
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR, body, null);
     }
 
     public static <T> ResponseEntity<T> status(HttpStatus status, T body) {
-        return new ResponseEntity<>(status, body);
+        return new ResponseEntity<>(status, body, null);
     }
 
     public HttpStatus getStatus() { return status; }
     public T getBody() { return body; }
+    public String getLocation() { return location; }
 }

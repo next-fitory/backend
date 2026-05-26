@@ -11,6 +11,10 @@ class ResponseWriter {
     static void write(Object result, HttpServletResponse resp) throws IOException {
         if (result instanceof ResponseEntity<?> re) {
             resp.setStatus(re.getStatus().getValue());
+            if (re.getLocation() != null) {
+                resp.setHeader("Location", re.getLocation());
+                return;
+            }
             if (re.getBody() != null) {
                 resp.setContentType("application/json;charset=UTF-8");
                 resp.getWriter().write(objectMapper.writeValueAsString(re.getBody()));
