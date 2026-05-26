@@ -4,7 +4,9 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.yaml.YAMLMapper;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,6 +16,25 @@ public class ConfigurationAdapter {
     private static final Map<String, String> properties = new HashMap<>();
     private static final ObjectMapper yamlMapper = new YAMLMapper();
     private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() {};
+
+    public static void loadDotEnv() {
+        File dotEnv = new File(".env");
+        if (!dotEnv.exists()) return;
+        try (BufferedReader reader = new BufferedReader(new FileReader(dotEnv))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty() || line.startsWith("#")) continue;
+                int idx = line.indexOf('=');
+                if (idx < 0) continue;
+                String key = line.substring(0, idx).trim();
+                String value = line.substring(idx + 1).trim();
+                System.setProperty(key, value);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load .env file", e);
+        }
+    }
 
     public static void load(File file) {
         try {
@@ -77,6 +98,8 @@ public class ConfigurationAdapter {
         String defaultVal = colonIdx >= 0 ? inner.substring(colonIdx + 1) : null;
 
         String resolved = System.getenv(varName);
+        if (resolved != null) return resolved;
+        resolved = System.getProperty(varName);
         if (resolved != null) return resolved;
         if (defaultVal != null) return defaultVal;
         throw new IllegalStateException("Environment variable not set and no default provided: " + varName);

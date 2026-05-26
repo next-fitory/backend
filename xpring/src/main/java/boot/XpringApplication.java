@@ -25,7 +25,8 @@ public final class XpringApplication {
 
         log.info("Starting Xpring application: {}", primarySource.getSimpleName());
 
-        // 1. application.yml 로드
+        // 1. .env → application.yml 순으로 로드
+        ConfigurationAdapter.loadDotEnv();
         ConfigurationAdapter.loadFromClasspath("application.yml");
         log.info("Loaded application configuration");
 
