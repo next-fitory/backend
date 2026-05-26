@@ -35,6 +35,11 @@ public class DispatcherServlet extends HttpServlet {
             throws ServletException, IOException {
         log.debug("{} {}", req.getMethod(), req.getRequestURI());
 
+        if ("/favicon.ico".equals(req.getRequestURI())) {
+            resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            return;
+        }
+
         Optional<HandlerExecution> execution = handlerMapping.getHandler(req);
         if (execution.isEmpty()) {
             log.warn("No handler found for {} {}", req.getMethod(), req.getRequestURI());
