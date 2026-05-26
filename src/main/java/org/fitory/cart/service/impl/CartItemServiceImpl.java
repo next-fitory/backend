@@ -29,7 +29,7 @@ public class CartItemServiceImpl implements CartItemService {
         }
 
         // 동일 상품이 이미 담겨 있으면 수량 합산
-        return cartItemRepository.findByUserIdAndProductId(request.user_id(), request.product_id())
+        return cartItemRepository.findByUserIdAndProductId(request.userId(), request.productId())
                 .map(existing -> {
                     existing.changeQuantity(existing.getQuantity() + request.quantity());
                     return cartItemRepository.save(existing);
@@ -37,8 +37,8 @@ public class CartItemServiceImpl implements CartItemService {
                 .orElseGet(() -> {
                     LocalDateTime now = LocalDateTime.now();
                     CartItem cartItem = CartItem.builder()
-                            .userId(request.user_id())
-                            .productId(request.product_id())
+                            .userId(request.userId())
+                            .productId(request.productId())
                             .quantity(request.quantity())
                             .createdAt(now)
                             .updatedAt(now)
