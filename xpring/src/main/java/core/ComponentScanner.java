@@ -5,6 +5,7 @@ import core.annotation.Component;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.jar.JarEntry;
@@ -22,14 +23,14 @@ public class ComponentScanner {
             while (resources.hasMoreElements()) {
                 URL url = resources.nextElement();
                 if ("file".equals(url.getProtocol())) {
-                    scanDirectory(new File(url.getFile()), basePackage, result, cl);
+                    scanDirectory(new File(url.toURI()), basePackage, result, cl);
                 } else if ("jar".equals(url.getProtocol())) {
                     String path = url.getPath();
                     String jarPath = path.substring(5, path.indexOf('!'));
                     scanJar(jarPath, packagePath, result, cl);
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             throw new RuntimeException("Failed to scan package: " + basePackage, e);
         }
         return result;
