@@ -16,7 +16,20 @@ import java.util.List;
 public final class XpringApplication {
     private static final Logger log = XpringLoggerFactory.getLogger(XpringApplication.class);
 
+    private static void printBanner() {
+        System.out.println();
+        System.out.println("  __ _ _                   ");
+        System.out.println(" / _(_) |_ ___  _ __ _   _ ");
+        System.out.println("| |_| | __/ _ \\| '__| | | |");
+        System.out.println("|  _| | || (_) | |  | |_| |");
+        System.out.println("|_| |_|\\__\\___/|_|   \\__, |");
+        System.out.println("                       |___/ ");
+        System.out.println();
+    }
+
     public static ApplicationContext run(Class<?> primarySource) {
+        printBanner();
+
         XpringBootApplication annotation = primarySource.getAnnotation(XpringBootApplication.class);
         if (annotation == null) {
             throw new IllegalArgumentException(

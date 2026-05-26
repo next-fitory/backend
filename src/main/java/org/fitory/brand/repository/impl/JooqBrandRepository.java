@@ -60,7 +60,7 @@ public class JooqBrandRepository implements BrandRepository {
     public Optional<Brand> findById(Long id) {
         return dsl.select()
                 .from(table(TABLE))
-                .where(field("id").eq(id).and(field("deleted").eq(false)))
+                .where(field("id").eq(id).and(field("deleted", Boolean.class).isFalse()))
                 .fetchOptional()
                 .map(this::toBrand);
     }
@@ -70,7 +70,7 @@ public class JooqBrandRepository implements BrandRepository {
         dsl.update(table(TABLE))
                 .set(field("deleted"), true)
                 .set(field("updated_at"), LocalDateTime.now())
-                .where(field("id").eq(id).and(field("deleted").eq(false)))
+                .where(field("id").eq(id).and(field("deleted", Boolean.class).isFalse()))
                 .execute();
     }
 
@@ -78,7 +78,7 @@ public class JooqBrandRepository implements BrandRepository {
     public List<Brand> findAll() {
         return dsl.select()
                 .from(table(TABLE))
-                .where(field("deleted").eq(false))
+                .where(field("deleted", Boolean.class).isFalse())
                 .fetch()
                 .map(this::toBrand);
     }
@@ -87,7 +87,7 @@ public class JooqBrandRepository implements BrandRepository {
     public Optional<Brand> findByName(String name) {
         return dsl.select()
                 .from(table(TABLE))
-                .where(field("name").eq(name).and(field("deleted").eq(false)))
+                .where(field("name").eq(name).and(field("deleted", Boolean.class).isFalse()))
                 .fetchOptional()
                 .map(this::toBrand);
     }
