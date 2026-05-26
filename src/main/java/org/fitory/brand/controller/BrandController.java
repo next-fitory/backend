@@ -12,7 +12,7 @@ import org.fitory.brand.service.BrandService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/brands")
+@RequestMapping("/api/brands")
 @RequiredArgsConstructor
 public class BrandController {
     private final BrandService brandService;
