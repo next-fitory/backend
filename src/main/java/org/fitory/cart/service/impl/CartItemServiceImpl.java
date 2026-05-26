@@ -4,6 +4,7 @@ import core.annotation.Service;
 import lombok.RequiredArgsConstructor;
 import org.fitory.cart.domain.CartItem;
 import org.fitory.cart.dto.AddCartItemRequest;
+import org.fitory.cart.dto.CartItemResponse;
 import org.fitory.cart.dto.UpdateCartItemRequest;
 import org.fitory.cart.exception.CartItemNotFoundException;
 import org.fitory.cart.repository.CartItemRepository;
@@ -18,44 +19,44 @@ public class CartItemServiceImpl implements CartItemService {
     private final CartItemRepository cartItemRepository;
 
     @Override
-    public List<CartItem> findAllByUserId(Long userId) {
-        return cartItemRepository.findAllByUserId(userId);
+    public List<CartItemResponse> findAllByUserId(Long userId) {
+        return cartItemRepository.findAllByUserId(userId).stream()
+                .map(CartItemResponse::of)
+                .toList();
     }
 
     @Override
-    public CartItem add(AddCartItemRequest request) {
+    public CartItemResponse add(AddCartItemRequest request) {
         if (request.quantity() <= 0) {
             throw new IllegalArgumentException("Quantity must be greater than 0");
         }
-
-        // 동일 상품이 이미 담겨 있으면 수량 합산
-        return cartItemRepository.findByUserIdAndProductId(request.userId(), request.productId())
+        CartItem result = cartItemRepository.findByUserIdAndProductId(request.userId(), request.productId())
                 .map(existing -> {
                     existing.changeQuantity(existing.getQuantity() + request.quantity());
                     return cartItemRepository.save(existing);
                 })
                 .orElseGet(() -> {
                     LocalDateTime now = LocalDateTime.now();
-                    CartItem cartItem = CartItem.builder()
+                    return cartItemRepository.save(CartItem.builder()
                             .userId(request.userId())
                             .productId(request.productId())
                             .quantity(request.quantity())
                             .createdAt(now)
                             .updatedAt(now)
-                            .build();
-                    return cartItemRepository.save(cartItem);
+                            .build());
                 });
+        return CartItemResponse.of(result);
     }
 
     @Override
-    public CartItem updateQuantity(Long id, UpdateCartItemRequest request) {
+    public CartItemResponse updateQuantity(Long id, UpdateCartItemRequest request) {
         if (request.quantity() <= 0) {
             throw new IllegalArgumentException("Quantity must be greater than 0");
         }
         CartItem cartItem = cartItemRepository.findById(id)
                 .orElseThrow(() -> new CartItemNotFoundException(id));
         cartItem.changeQuantity(request.quantity());
-        return cartItemRepository.save(cartItem);
+        return CartItemResponse.of(cartItemRepository.save(cartItem));
     }
 
     @Override

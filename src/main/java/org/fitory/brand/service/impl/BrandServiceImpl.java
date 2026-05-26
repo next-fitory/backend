@@ -3,6 +3,7 @@ package org.fitory.brand.service.impl;
 import core.annotation.Service;
 import lombok.RequiredArgsConstructor;
 import org.fitory.brand.domain.Brand;
+import org.fitory.brand.dto.BrandResponse;
 import org.fitory.brand.dto.CreateBrandRequest;
 import org.fitory.brand.dto.UpdateBrandRequest;
 import org.fitory.brand.exception.BrandNotFoundException;
@@ -18,46 +19,52 @@ public class BrandServiceImpl implements BrandService {
     private final BrandRepository brandRepository;
 
     @Override
-    public List<Brand> findAll() {
-        return brandRepository.findAll();
+    public List<BrandResponse> findAll() {
+        return brandRepository.findAll().stream()
+                .map(BrandResponse::of)
+                .toList();
     }
 
     @Override
-    public Brand findById(Long id) {
-        return brandRepository.findById(id)
-                .orElseThrow(() -> new BrandNotFoundException(id));
+    public BrandResponse findById(Long id) {
+        return BrandResponse.of(findDomain(id));
     }
 
     @Override
-    public Brand create(CreateBrandRequest request) {
+    public BrandResponse create(CreateBrandRequest request) {
         if (request.name() == null || request.name().isBlank()) {
             throw new IllegalArgumentException("Brand name must not be blank");
         }
         LocalDateTime now = LocalDateTime.now();
         Brand brand = Brand.builder()
                 .name(request.name())
-                .imageUrl(request.image_url())
+                .imageUrl(request.imageUrl())
                 .createdAt(now)
                 .updatedAt(now)
                 .deleted(false)
                 .build();
-        return brandRepository.save(brand);
+        return BrandResponse.of(brandRepository.save(brand));
     }
 
     @Override
-    public Brand update(Long id, UpdateBrandRequest request) {
-        Brand existing = findById(id);
+    public BrandResponse update(Long id, UpdateBrandRequest request) {
+        Brand existing = findDomain(id);
         Brand updated = existing.toBuilder()
                 .name(request.name() != null ? request.name() : existing.getName())
-                .imageUrl(request.image_url() != null ? request.image_url() : existing.getImageUrl())
+                .imageUrl(request.imageUrl() != null ? request.imageUrl() : existing.getImageUrl())
                 .updatedAt(LocalDateTime.now())
                 .build();
-        return brandRepository.save(updated);
+        return BrandResponse.of(brandRepository.save(updated));
     }
 
     @Override
     public void delete(Long id) {
-        findById(id);
+        findDomain(id);
         brandRepository.deleteById(id);
+    }
+
+    private Brand findDomain(Long id) {
+        return brandRepository.findById(id)
+                .orElseThrow(() -> new BrandNotFoundException(id));
     }
 }

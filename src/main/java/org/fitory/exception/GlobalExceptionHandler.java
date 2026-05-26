@@ -6,6 +6,8 @@ import mvc.annotation.ExceptionHandler;
 import org.fitory.brand.exception.BrandNotFoundException;
 import org.fitory.cart.exception.CartItemNotFoundException;
 import org.fitory.example.ProductNotFoundException;
+import org.fitory.review.exception.ReviewNotFoundException;
+import org.fitory.user.exception.UserNotFoundException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -22,6 +24,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CartItemNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleCartItemNotFound(CartItemNotFoundException e) {
+        return ResponseEntity.notFound(ErrorResponse.of("NOT_FOUND", e.getMessage()));
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException e) {
+        return ResponseEntity.notFound(ErrorResponse.of("NOT_FOUND", e.getMessage()));
+    }
+
+    @ExceptionHandler(ReviewNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleReviewNotFound(ReviewNotFoundException e) {
         return ResponseEntity.notFound(ErrorResponse.of("NOT_FOUND", e.getMessage()));
     }
 

@@ -7,20 +7,20 @@ import org.fitory.util.LocalDateTimeFormatter;
 @Builder
 public record CartItemResponse(
         Long id,
-        Long user_id,
-        Long product_id,
+        Long userId,
+        Long productId,
         int quantity,
-        String created_at,
-        String updated_at
+        String createdAt,
+        String updatedAt
 ) {
     public static CartItemResponse of(CartItem cartItem) {
         return CartItemResponse.builder()
                 .id(cartItem.getId())
-                .user_id(cartItem.getUserId())
-                .product_id(cartItem.getProductId())
+                .userId(cartItem.getUserId())
+                .productId(cartItem.getProductId())
                 .quantity(cartItem.getQuantity())
-                .created_at(LocalDateTimeFormatter.dateTime(cartItem.getCreatedAt()))
-                .updated_at(LocalDateTimeFormatter.dateTime(cartItem.getUpdatedAt()))
+                .createdAt(LocalDateTimeFormatter.dateTime(cartItem.getCreatedAt()))
+                .updatedAt(LocalDateTimeFormatter.dateTime(cartItem.getUpdatedAt()))
                 .build();
     }
 }

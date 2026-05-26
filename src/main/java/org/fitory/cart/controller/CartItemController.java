@@ -12,28 +12,25 @@ import org.fitory.cart.service.CartItemService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/carts")
+@RequestMapping("/api/carts")
 @RequiredArgsConstructor
 public class CartItemController {
     private final CartItemService cartItemService;
 
     @GetMapping
     public ResponseEntity<List<CartItemResponse>> getCart(@RequestParam Long userId) {
-        List<CartItemResponse> response = cartItemService.findAllByUserId(userId).stream()
-                .map(CartItemResponse::of)
-                .toList();
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(cartItemService.findAllByUserId(userId));
     }
 
     @PostMapping
     public ResponseEntity<CartItemResponse> add(@RequestBody AddCartItemRequest request) {
-        return ResponseEntity.created(CartItemResponse.of(cartItemService.add(request)));
+        return ResponseEntity.created(cartItemService.add(request));
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<CartItemResponse> updateQuantity(@PathVariable Long id,
                                                            @RequestBody UpdateCartItemRequest request) {
-        return ResponseEntity.ok(CartItemResponse.of(cartItemService.updateQuantity(id, request)));
+        return ResponseEntity.ok(cartItemService.updateQuantity(id, request));
     }
 
     @DeleteMapping("/{id}")
