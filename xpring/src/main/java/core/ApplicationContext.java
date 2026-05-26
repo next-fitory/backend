@@ -18,7 +18,7 @@ public class ApplicationContext implements BeanFactory {
     public ApplicationContext(String basePackage) {
         log.info("Scanning components in package: {}", basePackage);
         ComponentScanner scanner = new ComponentScanner();
-        Set<Class<?>> classes = scanner.scan(basePackage);
+        Set<Class<?>> classes = scanner.scan("org");
         log.info("Found {} component class(es)", classes.size());
 
         List<BeanDefinition> definitions = classes.stream()

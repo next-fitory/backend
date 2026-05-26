@@ -1,4 +1,4 @@
-package org.fitory.product;
+package org.fitory.example;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

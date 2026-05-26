@@ -1,4 +1,4 @@
-package org.fitory.product;
+package org.fitory.example;
 
 import core.annotation.RestController;
 import lombok.RequiredArgsConstructor;
