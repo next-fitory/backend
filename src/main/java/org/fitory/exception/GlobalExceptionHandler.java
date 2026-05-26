@@ -8,6 +8,7 @@ import org.fitory.cart.exception.CartItemNotFoundException;
 import org.fitory.example.ProductNotFoundException;
 import org.fitory.review.exception.ReviewNotFoundException;
 import org.fitory.user.exception.UserNotFoundException;
+import org.fitory.userlike.exception.UserLikeNotFoundException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -34,6 +35,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ReviewNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleReviewNotFound(ReviewNotFoundException e) {
+        return ResponseEntity.notFound(ErrorResponse.of("NOT_FOUND", e.getMessage()));
+    }
+
+    @ExceptionHandler(UserLikeNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserLikeNotFound(UserLikeNotFoundException e) {
         return ResponseEntity.notFound(ErrorResponse.of("NOT_FOUND", e.getMessage()));
     }
 
