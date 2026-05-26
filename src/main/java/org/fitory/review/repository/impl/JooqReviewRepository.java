@@ -57,7 +57,7 @@ public class JooqReviewRepository implements ReviewRepository {
     public Optional<Review> findById(Long id) {
         return dsl.select()
                 .from(table(TABLE))
-                .where(field("id").eq(id).and(field("deleted").eq(false)))
+                .where(field("id").eq(id).and(field("deleted", Boolean.class).isFalse()))
                 .fetchOptional()
                 .map(this::toReview);
     }
@@ -66,7 +66,7 @@ public class JooqReviewRepository implements ReviewRepository {
     public List<Review> findAll(int page, int size) {
         return dsl.select()
                 .from(table(TABLE))
-                .where(field("deleted").eq(false))
+                .where(field("deleted", Boolean.class).isFalse())
                 .orderBy(field("created_at").desc())
                 .limit(size)
                 .offset((long) page * size)
@@ -78,7 +78,7 @@ public class JooqReviewRepository implements ReviewRepository {
     public long count() {
         return dsl.selectCount()
                 .from(table(TABLE))
-                .where(field("deleted").eq(false))
+                .where(field("deleted", Boolean.class).isFalse())
                 .fetchOne(0, Long.class);
     }
 
@@ -86,7 +86,7 @@ public class JooqReviewRepository implements ReviewRepository {
     public List<Review> findAllByProductId(Long productId, int page, int size) {
         return dsl.select()
                 .from(table(TABLE))
-                .where(field("product_id").eq(productId).and(field("deleted").eq(false)))
+                .where(field("product_id").eq(productId).and(field("deleted", Boolean.class).isFalse()))
                 .orderBy(field("created_at").desc())
                 .limit(size)
                 .offset((long) page * size)
@@ -98,7 +98,7 @@ public class JooqReviewRepository implements ReviewRepository {
     public long countByProductId(Long productId) {
         return dsl.selectCount()
                 .from(table(TABLE))
-                .where(field("product_id").eq(productId).and(field("deleted").eq(false)))
+                .where(field("product_id").eq(productId).and(field("deleted", Boolean.class).isFalse()))
                 .fetchOne(0, Long.class);
     }
 
@@ -107,7 +107,7 @@ public class JooqReviewRepository implements ReviewRepository {
         dsl.update(table(TABLE))
                 .set(field("deleted"), true)
                 .set(field("updated_at"), LocalDateTime.now())
-                .where(field("id").eq(id).and(field("deleted").eq(false)))
+                .where(field("id").eq(id).and(field("deleted", Boolean.class).isFalse()))
                 .execute();
     }
 

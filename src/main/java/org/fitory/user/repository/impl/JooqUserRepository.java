@@ -55,7 +55,7 @@ public class JooqUserRepository implements UserRepository {
     public Optional<User> findById(Long id) {
         return dsl.select()
                 .from(table(TABLE))
-                .where(field("id").eq(id).and(field("deleted").eq(false)))
+                .where(field("id").eq(id).and(field("deleted", Boolean.class).isFalse()))
                 .fetchOptional()
                 .map(this::toUser);
     }
@@ -65,7 +65,7 @@ public class JooqUserRepository implements UserRepository {
         if (ids.isEmpty()) return List.of();
         return dsl.select()
                 .from(table(TABLE))
-                .where(field("id").in(ids).and(field("deleted").eq(false)))
+                .where(field("id").in(ids).and(field("deleted", Boolean.class).isFalse()))
                 .fetch()
                 .map(this::toUser);
     }
@@ -74,7 +74,7 @@ public class JooqUserRepository implements UserRepository {
     public List<User> findAll() {
         return dsl.select()
                 .from(table(TABLE))
-                .where(field("deleted").eq(false))
+                .where(field("deleted", Boolean.class).isFalse())
                 .fetch()
                 .map(this::toUser);
     }
@@ -84,7 +84,7 @@ public class JooqUserRepository implements UserRepository {
         dsl.update(table(TABLE))
                 .set(field("deleted"), true)
                 .set(field("updated_at"), LocalDateTime.now())
-                .where(field("id").eq(id).and(field("deleted").eq(false)))
+                .where(field("id").eq(id).and(field("deleted", Boolean.class).isFalse()))
                 .execute();
     }
 
