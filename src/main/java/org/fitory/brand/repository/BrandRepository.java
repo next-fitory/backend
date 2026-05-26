@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BrandRepository {
-    void save(Brand brand);
+    Brand save(Brand brand);
     Optional<Brand> findById(Long id);
     void deleteById(Long id);
     List<Brand> findAll();

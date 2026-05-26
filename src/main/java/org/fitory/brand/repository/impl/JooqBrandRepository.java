@@ -1,11 +1,13 @@
 package org.fitory.brand.repository.impl;
 
 import core.annotation.Repository;
+import lombok.RequiredArgsConstructor;
 import org.fitory.brand.domain.Brand;
 import org.fitory.brand.repository.BrandRepository;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,17 +15,17 @@ import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.table;
 
 @Repository
+@RequiredArgsConstructor
 public class JooqBrandRepository implements BrandRepository {
     private static final String TABLE = "brands";
     private final DSLContext dsl;
 
-    public JooqBrandRepository(DSLContext dsl) {
-        this.dsl = dsl;
-    }
-
     @Override
-    public void save(Brand brand) {
-
+    public Brand save(Brand brand) {
+        if (brand.getId() == null) {
+            return insert(brand);
+        }
+        return update(brand);
     }
 
     private Brand insert(Brand brand) {
@@ -39,28 +41,62 @@ public class JooqBrandRepository implements BrandRepository {
         return toBrand(record);
     }
 
+    private Brand update(Brand brand) {
+        Record record = dsl.update(table(TABLE))
+                .set(field("name"), brand.getName())
+                .set(field("image_url"), brand.getImageUrl())
+                .set(field("updated_at"), brand.getUpdatedAt())
+                .where(field("id").eq(brand.getId()))
+                .returning()
+                .fetchOne();
+
+        return toBrand(record);
+    }
+
     @Override
     public Optional<Brand> findById(Long id) {
-        return Optional.empty();
+        return dsl.select()
+                .from(table(TABLE))
+                .where(field("id").eq(id).and(field("deleted").eq(false)))
+                .fetchOptional()
+                .map(this::toBrand);
     }
 
     @Override
     public void deleteById(Long id) {
-
+        dsl.update(table(TABLE))
+                .set(field("deleted"), true)
+                .set(field("updated_at"), LocalDateTime.now())
+                .where(field("id").eq(id).and(field("deleted").eq(false)))
+                .execute();
     }
 
     @Override
     public List<Brand> findAll() {
-        return List.of();
+        return dsl.select()
+                .from(table(TABLE))
+                .where(field("deleted").eq(false))
+                .fetch()
+                .map(this::toBrand);
     }
 
     @Override
     public Optional<Brand> findByName(String name) {
-        return Optional.empty();
+        return dsl.select()
+                .from(table(TABLE))
+                .where(field("name").eq(name).and(field("deleted").eq(false)))
+                .fetchOptional()
+                .map(this::toBrand);
     }
 
-
     private Brand toBrand(Record record) {
-        return Brand.builder().build();
+        return Brand.builder()
+                .id(record.get(field("id", Long.class)))
+                .name(record.get(field("name", String.class)))
+                .imageUrl(record.get(field("image_url", String.class)))
+                .createdAt(record.get(field("created_at", LocalDateTime.class)))
+                .updatedAt(record.get(field("updated_at", LocalDateTime.class)))
+                .deleted(record.get(field("deleted", Boolean.class)))
+                .build();
     }
 }
