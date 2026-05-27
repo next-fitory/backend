@@ -4,11 +4,14 @@ import core.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import mvc.ResponseEntity;
 import mvc.annotation.*;
+import org.fitory.auth.domain.User;
 import org.fitory.common.dto.PageResponse;
 import org.fitory.review.dto.CreateReviewRequest;
 import org.fitory.review.dto.ReviewResponse;
 import org.fitory.review.dto.UpdateReviewRequest;
 import org.fitory.review.service.ReviewService;
+import security.Authentication;
+import security.annotation.CurrentUser;
 
 @RestController
 @RequestMapping("/api/reviews")
@@ -32,8 +35,9 @@ public class ReviewController {
 
     @PostMapping
     public ResponseEntity<ReviewResponse> create(
-            @RequestParam(required = true) Long userId,
-            @RequestBody CreateReviewRequest request) {
+            @RequestBody CreateReviewRequest request,
+            @CurrentUser Authentication auth) {
+        Long userId = ((User) auth.getPrincipal()).getId();
         return ResponseEntity.created(reviewService.create(userId, request));
     }
 
