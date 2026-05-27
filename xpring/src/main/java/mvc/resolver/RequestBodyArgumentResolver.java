@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import mvc.ArgumentResolver;
 import mvc.annotation.RequestBody;
+import tools.jackson.databind.JavaType;
 import tools.jackson.databind.ObjectMapper;
 
 import java.lang.reflect.Parameter;
@@ -20,6 +21,7 @@ public class RequestBodyArgumentResolver implements ArgumentResolver {
     @Override
     public Object resolve(Parameter parameter, HttpServletRequest request, HttpServletResponse response,
                           Map<String, String> pathVariables) throws Exception {
-        return objectMapper.readValue(request.getInputStream(), parameter.getType());
+        JavaType javaType = objectMapper.constructType(parameter.getParameterizedType());
+        return objectMapper.readValue(request.getInputStream(), javaType);
     }
 }
