@@ -34,13 +34,16 @@ public class CartItemController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<CartItemResponse> updateQuantity(@PathVariable Long id,
-                                                           @RequestBody UpdateCartItemRequest request) {
-        return ResponseEntity.ok(cartItemService.updateQuantity(id, request));
+                                                           @RequestBody UpdateCartItemRequest request,
+                                                           @CurrentUser Authentication auth) {
+        Long userId = ((User) auth.getPrincipal()).getId();
+        return ResponseEntity.ok(cartItemService.updateQuantity(id, userId, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        cartItemService.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id, @CurrentUser Authentication auth) {
+        Long userId = ((User) auth.getPrincipal()).getId();
+        cartItemService.delete(id, userId);
         return ResponseEntity.noContent();
     }
 

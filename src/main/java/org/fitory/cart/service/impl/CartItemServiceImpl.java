@@ -6,6 +6,7 @@ import org.fitory.cart.domain.CartItem;
 import org.fitory.cart.dto.AddCartItemRequest;
 import org.fitory.cart.dto.CartItemResponse;
 import org.fitory.cart.dto.UpdateCartItemRequest;
+import org.fitory.cart.exception.CartItemAccessDeniedException;
 import org.fitory.cart.exception.CartItemNotFoundException;
 import org.fitory.cart.repository.CartItemRepository;
 import org.fitory.cart.service.CartItemService;
@@ -49,20 +50,26 @@ public class CartItemServiceImpl implements CartItemService {
     }
 
     @Override
-    public CartItemResponse updateQuantity(Long id, UpdateCartItemRequest request) {
+    public CartItemResponse updateQuantity(Long id, Long userId, UpdateCartItemRequest request) {
         if (request.quantity() <= 0) {
             throw new IllegalArgumentException("Quantity must be greater than 0");
         }
         CartItem cartItem = cartItemRepository.findById(id)
                 .orElseThrow(() -> new CartItemNotFoundException(id));
+        if (!cartItem.getUserId().equals(userId)) {
+            throw new CartItemAccessDeniedException(id);
+        }
         cartItem.changeQuantity(request.quantity());
         return CartItemResponse.of(cartItemRepository.save(cartItem));
     }
 
     @Override
-    public void delete(Long id) {
-        cartItemRepository.findById(id)
+    public void delete(Long id, Long userId) {
+        CartItem cartItem = cartItemRepository.findById(id)
                 .orElseThrow(() -> new CartItemNotFoundException(id));
+        if (!cartItem.getUserId().equals(userId)) {
+            throw new CartItemAccessDeniedException(id);
+        }
         cartItemRepository.deleteById(id);
     }
 

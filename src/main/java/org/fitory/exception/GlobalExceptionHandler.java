@@ -4,6 +4,7 @@ import mvc.ResponseEntity;
 import mvc.annotation.ControllerAdvice;
 import mvc.annotation.ExceptionHandler;
 import org.fitory.brand.exception.BrandNotFoundException;
+import org.fitory.cart.exception.CartItemAccessDeniedException;
 import org.fitory.cart.exception.CartItemNotFoundException;
 import org.fitory.example.ProductNotFoundException;
 import org.fitory.review.exception.ReviewNotFoundException;
@@ -26,6 +27,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CartItemNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleCartItemNotFound(CartItemNotFoundException e) {
         return ResponseEntity.notFound(ErrorResponse.of(ErrorCode.NOT_FOUND, e.getMessage()));
+    }
+
+    @ExceptionHandler(CartItemAccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleCartItemAccessDenied(CartItemAccessDeniedException e) {
+        return ResponseEntity.forbidden(ErrorResponse.of(ErrorCode.FORBIDDEN, e.getMessage()));
     }
 
     @ExceptionHandler(UserNotFoundException.class)
