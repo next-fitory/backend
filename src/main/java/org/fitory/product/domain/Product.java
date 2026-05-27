@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor
 @Getter
-@Builder(toBuilder = true, access = AccessLevel.PRIVATE)
+@Builder(toBuilder = true)
 public class Product {
     private Long id;
     private Long brandId;

@@ -1,6 +1,6 @@
 package org.fitory.product.service.impl;
 
-import org.fitory.product.domain.Product;
+import org.fitory.product.dto.ProductResponse;
 import org.fitory.product.service.ProductService;
 
 import java.util.List;
@@ -8,7 +8,7 @@ import java.util.List;
 public class ProductServiceImpl implements ProductService {
 
     @Override
-    public List<Product> findAll() {
+    public List<ProductResponse> findAll() {
         return List.of();
     }
 }

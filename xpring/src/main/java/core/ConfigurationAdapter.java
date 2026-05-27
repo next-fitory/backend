@@ -18,8 +18,8 @@ public class ConfigurationAdapter {
     private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() {};
 
     public static void loadDotEnv() {
-        File dotEnv = new File(".env");
-        if (!dotEnv.exists()) return;
+        File dotEnv = findDotEnv();
+        if (dotEnv == null) return;
         try (BufferedReader reader = new BufferedReader(new FileReader(dotEnv))) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -72,6 +72,16 @@ public class ConfigurationAdapter {
 
     public static Map<String, String> getProperties() {
         return Collections.unmodifiableMap(properties);
+    }
+
+    private static File findDotEnv() {
+        File dir = new File(System.getProperty("user.dir")).getAbsoluteFile();
+        while (dir != null) {
+            File candidate = new File(dir, ".env");
+            if (candidate.exists()) return candidate;
+            dir = dir.getParentFile();
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
