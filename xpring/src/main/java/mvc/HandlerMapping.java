@@ -90,7 +90,10 @@ public class HandlerMapping {
                     pathVars.put(names.get(i), m.group(i + 1));
                 }
                 HandlerExecution execution = new HandlerExecution(handler, pathVars);
-                routeCache.put(cacheKey, execution);
+                // path variable이 없는 라우트만 캐싱 — 가변 URI를 키로 쓰면 캐시가 무한 증가함
+                if (names.isEmpty()) {
+                    routeCache.put(cacheKey, execution);
+                }
                 return Optional.of(execution);
             }
         }
