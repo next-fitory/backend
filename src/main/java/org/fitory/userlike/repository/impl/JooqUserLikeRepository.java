@@ -16,7 +16,7 @@ import static org.jooq.impl.DSL.table;
 
 @Repository
 public class JooqUserLikeRepository implements UserLikeRepository {
-    private static final String TABLE = "user_likes";
+    private static final String TABLE = "users_likes";
     private final DSLContext dsl;
 
     public JooqUserLikeRepository(DatabaseConfig databaseConfig) {

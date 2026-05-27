@@ -9,6 +9,7 @@ import org.jooq.Record;
 
 import java.util.List;
 
+import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.table;
 
 @Repository
@@ -24,7 +25,7 @@ public class JooqCategoryRepository implements CategoryRepository {
     public List<Category> findAll() {
         return dsl.select()
                 .from(table(TABLE))
-                .orderBy(table(TABLE).field("sort_order"))
+                .orderBy(field("sort_order"))
                 .fetch()
                 .map(this::toCategory);
     }
