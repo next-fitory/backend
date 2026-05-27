@@ -1,0 +1,8 @@
+.git
+.env
+.env.prod
+build
+xpring/build
+.gradle
+xpring/.gradle
+*.md

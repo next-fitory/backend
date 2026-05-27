@@ -75,12 +75,14 @@ public final class XpringApplication {
             log.info("Registering {} filter(s)", filters.size());
         }
 
-        // 6. 서버 시작
+        // 6. 서버 시작 — Render 등 PaaS는 PORT 환경변수로 포트를 주입함
+        String envPort = System.getenv("PORT");
+        int port = (envPort != null) ? Integer.parseInt(envPort) : annotation.port();
         try {
-            new EmbeddedTomcatServer(dispatcherServlet, filters).start(annotation.port());
+            new EmbeddedTomcatServer(dispatcherServlet, filters).start(port);
         } catch (Exception e) {
-            log.error("Failed to start server on port {}", annotation.port());
-            throw new RuntimeException("Failed to start embedded server on port " + annotation.port(), e);
+            log.error("Failed to start server on port {}", port);
+            throw new RuntimeException("Failed to start embedded server on port " + port, e);
         }
 
         return context;
