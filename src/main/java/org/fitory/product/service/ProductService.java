@@ -7,7 +7,7 @@ import org.fitory.product.dto.UpdateProductRequest;
 import java.util.List;
 
 public interface ProductService {
-    List<ProductResponse> findAll(Long categoryId, String sort);
+    List<ProductResponse> findAll();
 
     ProductResponse findById(Long id);
 

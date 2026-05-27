@@ -7,7 +7,7 @@ import org.fitory.util.LocalDateTimeFormatter;
 @Builder
 public record ProductResponse(Long id, Long brandId, Long categoryId, String name, String description,
                               int price, int salePrice, int discountRate, int stock, String imageUrl, String brandName,
-                              String createAt, String updatedAt) {
+                              String createdAt, String updatedAt) {
     public static ProductResponse of(Product product) {
         return ProductResponse.builder()
                 .id(product.getId())
@@ -21,7 +21,7 @@ public record ProductResponse(Long id, Long brandId, Long categoryId, String nam
                 .stock(product.getStock())
                 .imageUrl(product.getImageUrl())
                 .brandName("")
-                .createAt(LocalDateTimeFormatter.date(product.getCreatedAt()))
+                .createdAt(LocalDateTimeFormatter.date(product.getCreatedAt()))
                 .updatedAt(LocalDateTimeFormatter.date(product.getUpdatedAt()))
                 .build();
     }

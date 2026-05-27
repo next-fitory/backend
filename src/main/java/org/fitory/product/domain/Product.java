@@ -26,6 +26,10 @@ public class Product {
     private LocalDateTime updatedAt;
 
     private static String validateDescription(String description) {
+        if (description == null) {
+            return "";
+        }
+
         if (description.length() > 100) {
             throw new IllegalArgumentException("description must be less than 100 characters");
         }
@@ -56,7 +60,6 @@ public class Product {
     }
 
     public Product update(UpdateProductRequest request) {
-        this.updatedAt = LocalDateTime.now();
         String validatedDescription = validateDescription(request.description());
 
         return this.toBuilder()
@@ -71,8 +74,10 @@ public class Product {
                 .build();
     }
 
-    public void delete() {
-        this.updatedAt = LocalDateTime.now();
-        this.deleted = true;
+    public Product delete() {
+        return this.toBuilder()
+                .deleted(true)
+                .updatedAt(LocalDateTime.now())
+                .build();
     }
 }
