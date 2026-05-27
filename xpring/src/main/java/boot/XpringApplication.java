@@ -1,6 +1,7 @@
 package boot;
 
 import core.ApplicationContext;
+import core.ConfigurationAdapter;
 import jakarta.servlet.Filter;
 import log.Logger;
 import log.XpringLoggerFactory;
@@ -15,7 +16,20 @@ import java.util.List;
 public final class XpringApplication {
     private static final Logger log = XpringLoggerFactory.getLogger(XpringApplication.class);
 
+    private static void printBanner() {
+        System.out.println();
+        System.out.println("  __ _ _                   ");
+        System.out.println(" / _(_) |_ ___  _ __ _   _ ");
+        System.out.println("| |_| | __/ _ \\| '__| | | |");
+        System.out.println("|  _| | || (_) | |  | |_| |");
+        System.out.println("|_| |_|\\__\\___/|_|   \\__, |");
+        System.out.println("                       |___/ ");
+        System.out.println();
+    }
+
     public static ApplicationContext run(Class<?> primarySource) {
+        printBanner();
+
         XpringBootApplication annotation = primarySource.getAnnotation(XpringBootApplication.class);
         if (annotation == null) {
             throw new IllegalArgumentException(
@@ -24,10 +38,15 @@ public final class XpringApplication {
 
         log.info("Starting Xpring application: {}", primarySource.getSimpleName());
 
-        // 1. 빈 컨텍스트 생성
+        // 1. .env → application.yml 순으로 로드
+        ConfigurationAdapter.loadDotEnv();
+        ConfigurationAdapter.loadFromClasspath("application.yml");
+        log.info("Loaded application configuration");
+
+        // 2. 빈 컨텍스트 생성
         ApplicationContext context = new ApplicationContext(primarySource.getPackageName());
 
-        // 2. ApplicationRunner 빈 실행
+        // 3. ApplicationRunner 빈 실행
         List<ApplicationRunner> runners = context.getBeansOfType(ApplicationRunner.class);
         if (!runners.isEmpty()) {
             log.info("Running {} ApplicationRunner(s)", runners.size());

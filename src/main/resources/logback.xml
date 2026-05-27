@@ -14,6 +14,9 @@
     <!-- 애플리케이션 코드는 INFO -->
     <logger name="org.fitory" level="INFO"/>
 
+    <!-- jOOQ 버전 불일치 경고 억제 (PG 17.6 vs jOOQ 타깃 17.7+, 기능 무관) -->
+    <logger name="org.jooq" level="ERROR"/>
+
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
     </root>

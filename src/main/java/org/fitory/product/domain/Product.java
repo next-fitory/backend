@@ -1,35 +1,28 @@
 package org.fitory.product.domain;
 
 import lombok.*;
-import org.fitory.product.dto.RequestDto;
+import org.fitory.product.dto.AddProductRequest;
 
 import java.time.LocalDateTime;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
 @Getter
-@Builder(toBuilder = true, access = AccessLevel.PRIVATE)
+@Builder(toBuilder = true)
 public class Product {
     private Long id;
+    private Long brandId;
+    private Long categoryId;
     private String name;
     private String description;
-
-    @Setter
     private int price;
-
+//    private int salePrice;
+    private int discountRate;
+    private int stock;
+    private String imageUrl;
     private boolean deleted;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-
-    public Product(Long id, String name, String description, int price, boolean deleted, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.id = id;
-        this.name = name;
-        this.description = validateDescription(description);
-        this.price = price;
-        this.deleted = deleted;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
 
     private String validateDescription(String description) {
         if (description.length() > 100) {
@@ -38,13 +31,17 @@ public class Product {
         return description;
     }
 
+    public int salePrice() {
+        return (int) (this.price * (100 - this.discountRate) * 0.01);
+    }
+
     public void delete() {
         this.deleted = true;
     }
 
-    public void update(RequestDto requestDto) {
+    public void update(AddProductRequest requestDto) {
         this.name = requestDto.name();
-        this.description = requestDto.description();
+        this.description = validateDescription(requestDto.description());
         this.price = requestDto.price();
 
         this.updatedAt = LocalDateTime.now();

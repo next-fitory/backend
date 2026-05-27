@@ -10,6 +10,10 @@ java {
     targetCompatibility = JavaVersion.VERSION_21
 }
 
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs << '-parameters'
+}
+
 repositories {
     mavenCentral()
 }
@@ -28,6 +32,15 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5' // JSON 파싱용
 
     compileOnly 'jakarta.servlet:jakarta.servlet-api:6.0.0'
+
+    // Source: https://mvnrepository.com/artifact/org.postgresql/postgresql
+    implementation("org.postgresql:postgresql:42.7.11")
+
+    // Source: https://mvnrepository.com/artifact/com.zaxxer/HikariCP
+    implementation("com.zaxxer:HikariCP:7.0.2")
+
+    // Source: https://mvnrepository.com/artifact/org.jooq/jooq
+    implementation("org.jooq:jooq:3.20.15")
 }
 
 test {
