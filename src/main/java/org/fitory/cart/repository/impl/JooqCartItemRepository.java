@@ -32,25 +32,24 @@ public class JooqCartItemRepository implements CartItemRepository {
     }
 
     private CartItem insert(CartItem cartItem) {
-        Record record = dsl.insertInto(table(TABLE))
+        Long id = dsl.insertInto(table(TABLE))
                 .set(field("user_id"), cartItem.getUserId())
                 .set(field("product_id"), cartItem.getProductId())
                 .set(field("quantity"), cartItem.getQuantity())
                 .set(field("created_at"), cartItem.getCreatedAt())
                 .set(field("updated_at"), cartItem.getUpdatedAt())
-                .returning()
-                .fetchOne();
-        return toCartItem(record);
+                .returning(field("id", Long.class))
+                .fetchOne(field("id", Long.class));
+        return cartItem.toBuilder().id(id).build();
     }
 
     private CartItem update(CartItem cartItem) {
-        Record record = dsl.update(table(TABLE))
+        dsl.update(table(TABLE))
                 .set(field("quantity"), cartItem.getQuantity())
                 .set(field("updated_at"), cartItem.getUpdatedAt())
                 .where(field("id").eq(cartItem.getId()))
-                .returning()
-                .fetchOne();
-        return toCartItem(record);
+                .execute();
+        return cartItem;
     }
 
     @Override

@@ -5,7 +5,6 @@ import org.fitory.infra.DatabaseConfig;
 import org.fitory.userlike.domain.UserLike;
 import org.fitory.userlike.repository.UserLikeRepository;
 import org.jooq.DSLContext;
-import org.jooq.Record;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,13 +24,13 @@ public class JooqUserLikeRepository implements UserLikeRepository {
 
     @Override
     public UserLike save(UserLike userLike) {
-        Record record = dsl.insertInto(table(TABLE))
+        Long id = dsl.insertInto(table(TABLE))
                 .set(field("user_id"), userLike.getUserId())
                 .set(field("product_id"), userLike.getProductId())
                 .set(field("created_at"), userLike.getCreatedAt())
-                .returning()
-                .fetchOne();
-        return toUserLike(record);
+                .returning(field("id", Long.class))
+                .fetchOne(field("id", Long.class));
+        return userLike.toBuilder().id(id).build();
     }
 
     @Override

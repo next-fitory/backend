@@ -29,7 +29,7 @@ public class JooqReviewRepository implements ReviewRepository {
     }
 
     private Review insert(Review review) {
-        Record record = dsl.insertInto(table(TABLE))
+        Long id = dsl.insertInto(table(TABLE))
                 .set(field("product_id"), review.getProductId())
                 .set(field("user_id"), review.getUserId())
                 .set(field("content"), review.getContent())
@@ -37,20 +37,19 @@ public class JooqReviewRepository implements ReviewRepository {
                 .set(field("created_at"), review.getCreatedAt())
                 .set(field("updated_at"), review.getUpdatedAt())
                 .set(field("deleted"), review.isDeleted())
-                .returning()
-                .fetchOne();
-        return toReview(record);
+                .returning(field("id", Long.class))
+                .fetchOne(field("id", Long.class));
+        return review.toBuilder().id(id).build();
     }
 
     private Review update(Review review) {
-        Record record = dsl.update(table(TABLE))
+        dsl.update(table(TABLE))
                 .set(field("content"), review.getContent())
                 .set(field("rating"), review.getRating())
                 .set(field("updated_at"), review.getUpdatedAt())
                 .where(field("id").eq(review.getId()))
-                .returning()
-                .fetchOne();
-        return toReview(record);
+                .execute();
+        return review;
     }
 
     @Override
