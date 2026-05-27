@@ -2,11 +2,11 @@ package org.fitory.product.service.impl;
 
 import core.annotation.Service;
 import lombok.RequiredArgsConstructor;
-import org.fitory.example.ProductNotFoundException;
 import org.fitory.product.domain.Product;
 import org.fitory.product.dto.CreateProductRequest;
 import org.fitory.product.dto.ProductResponse;
 import org.fitory.product.dto.UpdateProductRequest;
+import org.fitory.product.exception.ProductNotFoundException;
 import org.fitory.product.repository.ProductRepository;
 import org.fitory.product.service.ProductService;
 
@@ -19,19 +19,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
 
     @Override
-    public List<ProductResponse> findAll(Long categoryId, String sort) {
-        if (categoryId != null) {
-            return productRepository.findAllByCategoryId(categoryId).stream()
-                    .map(ProductResponse::of)
-                    .toList();
-        }
-
-        if ("newest".equals(sort)) {
-            return productRepository.findAllByOrderByCreatedAtDesc().stream()
-                    .map(ProductResponse::of)
-                    .toList();
-        }
-
+    public List<ProductResponse> findAll() {
         return productRepository.findAll().stream()
                 .map(ProductResponse::of)
                 .toList();
@@ -61,8 +49,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void delete(Long id) {
-        findDomain(id);
-        productRepository.deleteById(id);
+        productRepository.save(findDomain(id).delete());
     }
 
     private Product findDomain(Long id) {

@@ -19,9 +19,8 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping
-    public ResponseEntity<List<ProductResponse>> getProduct(@RequestParam Long categoryId,
-                                                            @RequestParam String sort) {
-        return ResponseEntity.ok(productService.findAll(categoryId, sort));
+    public ResponseEntity<List<ProductResponse>> getProduct() {
+        return ResponseEntity.ok(productService.findAll());
     }
 
     @GetMapping("/{id}")
