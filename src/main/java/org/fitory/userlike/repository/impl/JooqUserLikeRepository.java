@@ -5,6 +5,7 @@ import org.fitory.infra.DatabaseConfig;
 import org.fitory.userlike.domain.UserLike;
 import org.fitory.userlike.repository.UserLikeRepository;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 
 import java.time.LocalDateTime;
 import java.util.List;
