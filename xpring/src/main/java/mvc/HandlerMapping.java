@@ -23,6 +23,9 @@ public class HandlerMapping {
         beanFactory.getBeans().stream()
                 .filter(bean -> isRestController(bean.getClass()))
                 .forEach(this::registerController);
+        // path variable이 없는 exact 라우트를 먼저 탐색하도록 정렬
+        // ex) GET /products/ranked 가 GET /products/{id} 보다 우선
+        handlers.sort(Comparator.comparingInt(h -> h.getPathVariableNames().size()));
     }
 
     private void registerController(Object controller) {
