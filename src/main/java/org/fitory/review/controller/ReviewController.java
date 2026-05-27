@@ -18,8 +18,8 @@ public class ReviewController {
 
     @GetMapping
     public ResponseEntity<PageResponse<ReviewResponse>> getAll(
-            @RequestParam Integer page,
-            @RequestParam Integer size) {
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
         int p = page != null ? page : 0;
         int s = size != null ? size : 10;
         return ResponseEntity.ok(reviewService.findAll(p, s));
@@ -32,7 +32,7 @@ public class ReviewController {
 
     @PostMapping
     public ResponseEntity<ReviewResponse> create(
-            @RequestParam Long userId,
+            @RequestParam(required = true) Long userId,
             @RequestBody CreateReviewRequest request) {
         return ResponseEntity.created(reviewService.create(userId, request));
     }

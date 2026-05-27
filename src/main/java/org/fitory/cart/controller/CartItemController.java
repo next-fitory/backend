@@ -18,7 +18,7 @@ public class CartItemController {
     private final CartItemService cartItemService;
 
     @GetMapping
-    public ResponseEntity<List<CartItemResponse>> getCart(@RequestParam Long userId) {
+    public ResponseEntity<List<CartItemResponse>> getCart(@RequestParam(required = true) Long userId) {
         return ResponseEntity.ok(cartItemService.findAllByUserId(userId));
     }
 
@@ -40,7 +40,7 @@ public class CartItemController {
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> deleteAll(@RequestParam Long userId) {
+    public ResponseEntity<Void> deleteAll(@RequestParam(required = true) Long userId) {
         cartItemService.deleteAll(userId);
         return ResponseEntity.noContent();
     }

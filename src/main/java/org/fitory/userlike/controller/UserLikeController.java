@@ -32,7 +32,7 @@ public class UserLikeController {
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> unlike(@RequestParam Long userId, @RequestParam Long productId) {
+    public ResponseEntity<Void> unlike(@RequestParam(required = true) Long userId, @RequestParam(required = true) Long productId) {
         userLikeService.unlike(userId, productId);
         return ResponseEntity.noContent();
     }
