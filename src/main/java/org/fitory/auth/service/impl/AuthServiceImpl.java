@@ -9,6 +9,7 @@ import org.fitory.auth.dto.SignupRequest;
 import org.fitory.auth.dto.TokenResponse;
 import org.fitory.auth.repository.UserRepository;
 import org.fitory.auth.service.AuthService;
+import org.fitory.auth.service.NicknameGenerator;
 import org.fitory.security.JwtProvider;
 
 @Service
@@ -17,6 +18,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
+    private final NicknameGenerator nicknameGenerator;
 
     @Override
     public User signup(SignupRequest request) {
@@ -28,6 +30,7 @@ public class AuthServiceImpl implements AuthService {
                 .email(request.email())
                 .password(request.password())
                 .role(Role.USER)
+                .name(nicknameGenerator.generate())
                 .build();
 
         return userRepository.save(user);

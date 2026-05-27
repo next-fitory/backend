@@ -1,27 +1,40 @@
-package org.fitory.user.repository.impl;
+package org.fitory.auth.repository;
 
 import core.annotation.Repository;
 import org.fitory.auth.domain.Role;
 import org.fitory.auth.domain.User;
 import org.fitory.infra.DatabaseConfig;
-import org.fitory.user.repository.UserRepository;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.table;
 
-
 @Repository
-public class JooqUserRepository implements UserRepository {
+public class JooqAuthRepository implements UserRepository{
     private static final String TABLE = "users";
     private final DSLContext dsl;
 
-    public JooqUserRepository(DatabaseConfig databaseConfig) {
+    public JooqAuthRepository(DatabaseConfig databaseConfig) {
         this.dsl = databaseConfig.dsl();
+    }
+
+    @Override
+    public User save(User user) {
+        return user.getId() == null ? insert(user) : null;
+    }
+
+    private User insert(User user) {
+        Record record = dsl.insertInto(table(TABLE))
+                .set(field("email"), user.getEmail())
+                .set(field("password"), user.getPassword())
+                .set(field("name"), user.getName())
+                .set(field("role"), field("?::role", String.class, user.getRole().name()))
+                .returning()
+                .fetchOne();
+        return user;
     }
 
     @Override
@@ -42,29 +55,11 @@ public class JooqUserRepository implements UserRepository {
                 .map(this::toUser);
     }
 
-    @Override
-    public List<User> findAllByIds(List<Long> ids) {
-        if (ids.isEmpty()) return List.of();
-        return dsl.select()
-                .from(table(TABLE))
-                .where(field("id").in(ids).and(field("deleted", Boolean.class).isFalse()))
-                .fetch()
-                .map(this::toUser);
-    }
-
-    @Override
-    public List<User> findAll() {
-        return dsl.select()
-                .from(table(TABLE))
-                .where(field("deleted", Boolean.class).isFalse())
-                .fetch()
-                .map(this::toUser);
-    }
-
     private User toUser(Record record) {
         return User.builder()
                 .id(record.get("id", Long.class))
                 .email(record.get("email", String.class))
+                .name(record.get("name", String.class))
                 .password(record.get("password", String.class))
                 .role(record.get("role", Role.class))
                 .build();

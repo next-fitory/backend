@@ -3,3 +3,5 @@ database:
   url: ${DATABASE_URL}
   username: ${DATABASE_USERNAME}
   password: ${DATABASE_PASSWORD}
+
+jwtSecretKey: ${JWT_SECRET_KEY}

@@ -14,4 +14,11 @@ public record UserResponse(Long id, String email, String name, String createdAt)
                 .createdAt(LocalDateTimeFormatter.dateTime(user.getCreatedAt()))
                 .build();
     }
+
+    public static UserResponse of(org.fitory.auth.domain.User user) {
+        return UserResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .build();
+    }
 }

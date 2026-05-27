@@ -1,5 +1,6 @@
 package org.fitory.security;
 
+import core.ConfigurationAdapter;
 import core.annotation.Service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -13,7 +14,7 @@ import java.util.Date;
 @Service
 public class JwtProvider {
 
-    private static final String SECRET_KEY_STRING = System.getenv("JWT_SECRET_KEY");
+    private static final String SECRET_KEY_STRING = System.getenv("JWT_SECRET_KEY") == null ? ConfigurationAdapter.getProperty("jwtSecretKey") : System.getenv("JWT_SECRET_KEY");
     private static final Key SECRET_KEY = Keys.hmacShaKeyFor(SECRET_KEY_STRING.getBytes());
     private static final long ACCESS_TOKEN_EXPIRATION = 1000L * 60 * 60 * 2; // 2시간
 

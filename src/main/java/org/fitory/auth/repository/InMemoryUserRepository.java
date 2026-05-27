@@ -1,6 +1,5 @@
 package org.fitory.auth.repository;
 
-import core.annotation.Repository;
 import org.fitory.auth.domain.Role;
 import org.fitory.auth.domain.User;
 
@@ -9,7 +8,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-@Repository
 public class InMemoryUserRepository implements UserRepository {
 
     private final Map<Long, User> store = new ConcurrentHashMap<>();

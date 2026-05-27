@@ -2,6 +2,7 @@ package org.fitory.review.service.impl;
 
 import core.annotation.Service;
 import lombok.RequiredArgsConstructor;
+import org.fitory.auth.service.AuthService;
 import org.fitory.common.dto.PageResponse;
 import org.fitory.review.domain.Review;
 import org.fitory.review.dto.CreateReviewRequest;
@@ -99,4 +100,5 @@ public class ReviewServiceImpl implements ReviewService {
                 .collect(Collectors.toList());
         return PageResponse.of(content, page, size, total);
     }
+
 }

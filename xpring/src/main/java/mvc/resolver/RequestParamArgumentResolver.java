@@ -3,6 +3,7 @@ package mvc.resolver;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import mvc.ArgumentResolver;
+import mvc.MissingRequestParamException;
 import mvc.annotation.RequestParam;
 
 import java.lang.reflect.Parameter;
@@ -18,8 +19,14 @@ public class RequestParamArgumentResolver implements ArgumentResolver {
     @Override
     public Object resolve(Parameter parameter, HttpServletRequest request, HttpServletResponse response,
                           Map<String, String> pathVariables) {
-        String name = parameter.getAnnotation(RequestParam.class).value();
+        RequestParam annotation = parameter.getAnnotation(RequestParam.class);
+        String name = annotation.value();
         if (name.isEmpty()) name = parameter.getName();
-        return TypeConverter.convert(request.getParameter(name), parameter.getType());
+
+        String value = request.getParameter(name);
+        if (value == null && annotation.required()) {
+            throw new MissingRequestParamException(name);
+        }
+        return TypeConverter.convert(value, parameter.getType());
     }
 }
