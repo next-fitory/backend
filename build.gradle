@@ -26,6 +26,13 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 
+    // JWT 토큰을 다루기 위한 필수 라이브러리들 (jjwt)
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5' // JSON 파싱용
+
+    compileOnly 'jakarta.servlet:jakarta.servlet-api:6.0.0'
+
     // Source: https://mvnrepository.com/artifact/org.postgresql/postgresql
     implementation("org.postgresql:postgresql:42.7.11")
 
