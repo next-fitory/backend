@@ -31,6 +31,16 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public PageResponse<ProductResponse> findAllByCategoryId(Long categoryId, int page, int size) {
+        List<ProductResponse> content = productRepository.findAllByCategoryId(categoryId, page, size)
+                .stream()
+                .map(ProductResponse::of)
+                .toList();
+        long total = productRepository.countByCategoryId(categoryId);
+        return PageResponse.of(content, page, size, total);
+    }
+
+    @Override
     public PageResponse<ProductResponse> search(ProductSearchRequest request, int page, int size) {
         List<ProductResponse> content = productRepository.search(request, page, size);
         long total = productRepository.countSearch(request);
