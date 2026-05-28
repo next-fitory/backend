@@ -1,8 +1,8 @@
-package org.fitory.category.reppository.impl;
+package org.fitory.category.repository.impl;
 
 import core.annotation.Repository;
 import org.fitory.category.domain.Category;
-import org.fitory.category.reppository.CategoryRepository;
+import org.fitory.category.repository.CategoryRepository;
 import org.fitory.infra.DatabaseConfig;
 import org.jooq.DSLContext;
 import org.jooq.Record;

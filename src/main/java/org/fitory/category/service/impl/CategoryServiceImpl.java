@@ -3,7 +3,7 @@ package org.fitory.category.service.impl;
 import core.annotation.Service;
 import lombok.RequiredArgsConstructor;
 import org.fitory.category.dto.CategoryResponse;
-import org.fitory.category.reppository.CategoryRepository;
+import org.fitory.category.repository.CategoryRepository;
 import org.fitory.category.service.CategoryService;
 
 import java.util.List;
