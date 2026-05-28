@@ -21,7 +21,7 @@ public class ProductCurationController {
         return ResponseEntity.ok(productCurationService.findNewArrivals());
     }
 
-    @GetMapping("/ranked")
+    @GetMapping("/ranks")
     public ResponseEntity<List<ProductResponse>> ranked() {
         return ResponseEntity.ok(productCurationService.findRanked());
     }

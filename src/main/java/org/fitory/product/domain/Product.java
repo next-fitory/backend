@@ -1,7 +1,8 @@
 package org.fitory.product.domain;
 
 import lombok.*;
-import org.fitory.product.dto.AddProductRequest;
+import org.fitory.product.dto.CreateProductRequest;
+import org.fitory.product.dto.UpdateProductRequest;
 
 import java.time.LocalDateTime;
 
@@ -16,7 +17,7 @@ public class Product {
     private String name;
     private String description;
     private int price;
-//    private int salePrice;
+    //    private int salePrice;
     private int discountRate;
     private int stock;
     private String imageUrl;
@@ -24,7 +25,11 @@ public class Product {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private String validateDescription(String description) {
+    private static String validateDescription(String description) {
+        if (description == null) {
+            return "";
+        }
+
         if (description.length() > 100) {
             throw new IllegalArgumentException("description must be less than 100 characters");
         }
@@ -35,15 +40,44 @@ public class Product {
         return (int) (this.price * (100 - this.discountRate) * 0.01);
     }
 
-    public void delete() {
-        this.deleted = true;
+    public static Product create(CreateProductRequest request) {
+        LocalDateTime now = LocalDateTime.now();
+        String validatedDescription = validateDescription(request.description());
+
+        return Product.builder()
+                .brandId(request.brandId())
+                .categoryId(request.categoryId())
+                .name(request.name())
+                .description(validatedDescription)
+                .price(request.price())
+                .discountRate(request.discountRate())
+                .stock(request.stock())
+                .imageUrl(request.imageUrl())
+                .deleted(false)
+                .createdAt(now)
+                .updatedAt(now)
+                .build();
     }
 
-    public void update(AddProductRequest requestDto) {
-        this.name = requestDto.name();
-        this.description = validateDescription(requestDto.description());
-        this.price = requestDto.price();
+    public Product update(UpdateProductRequest request) {
+        String validatedDescription = validateDescription(request.description());
 
-        this.updatedAt = LocalDateTime.now();
+        return this.toBuilder()
+                .categoryId(request.categoryId())
+                .name(request.name())
+                .description(validatedDescription)
+                .price(request.price())
+                .discountRate(request.discountRate())
+                .stock(request.stock())
+                .imageUrl(request.imageUrl())
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
+    public Product delete() {
+        return this.toBuilder()
+                .deleted(true)
+                .updatedAt(LocalDateTime.now())
+                .build();
     }
 }

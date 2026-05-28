@@ -5,6 +5,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import mvc.ArgumentResolver;
 import security.Authentication;
 import security.SecurityContextHolder;
+import security.TokenExpiredException;
+import security.UnauthorizedException;
 import security.annotation.CurrentUser;
 
 import java.lang.reflect.Parameter;
@@ -28,7 +30,13 @@ public class AuthenticationArgumentResolver implements ArgumentResolver {
             return auth;
         }
 
-        // @CurrentUser → principal 반환 (User, Member 등 도메인 객체)
-        return auth != null ? auth.getPrincipal() : null;
+        // @CurrentUser → principal 반환, 토큰 만료/비인증이면 401
+        if (auth == null) {
+            if (Boolean.TRUE.equals(request.getAttribute("TOKEN_EXPIRED"))) {
+                throw new TokenExpiredException();
+            }
+            throw new UnauthorizedException();
+        }
+        return auth.getPrincipal();
     }
 }

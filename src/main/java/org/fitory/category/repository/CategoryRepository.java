@@ -1,4 +1,4 @@
-package org.fitory.category.reppository;
+package org.fitory.category.repository;
 
 import org.fitory.category.domain.Category;
 

@@ -8,6 +8,7 @@ import org.fitory.user.repository.UserRepository;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,8 +66,10 @@ public class JooqUserRepository implements UserRepository {
         return User.builder()
                 .id(record.get("id", Long.class))
                 .email(record.get("email", String.class))
+                .name(record.get("name", String.class))
                 .password(record.get("password", String.class))
                 .role(record.get("role", Role.class))
+                .createdAt(record.get("created_at", LocalDateTime.class))
                 .build();
     }
 }

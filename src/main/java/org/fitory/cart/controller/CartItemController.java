@@ -7,12 +7,12 @@ import mvc.annotation.*;
 import org.fitory.auth.domain.User;
 import org.fitory.cart.dto.AddCartItemRequest;
 import org.fitory.cart.dto.CartItemResponse;
+import org.fitory.cart.dto.CartProductResponse;
 import org.fitory.cart.dto.UpdateCartItemRequest;
 import org.fitory.cart.service.CartItemService;
+import org.fitory.common.dto.PageResponse;
 import security.Authentication;
 import security.annotation.CurrentUser;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/carts")
@@ -21,9 +21,14 @@ public class CartItemController {
     private final CartItemService cartItemService;
 
     @GetMapping
-    public ResponseEntity<List<CartItemResponse>> getCart(@CurrentUser Authentication auth) {
+    public ResponseEntity<PageResponse<CartProductResponse>> getCart(
+            @CurrentUser Authentication auth,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
         Long userId = ((User) auth.getPrincipal()).getId();
-        return ResponseEntity.ok(cartItemService.findAllByUserId(userId));
+        int p = page != null ? page : 0;
+        int s = size != null ? size : 10;
+        return ResponseEntity.ok(cartItemService.findCartProducts(userId, p, s));
     }
 
     @PostMapping

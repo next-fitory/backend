@@ -32,6 +32,11 @@ public class JwtSecurityFilter extends SecurityFilter {
 
         String token = authorizationHeader.substring(7);
 
+        if (jwtProvider.isExpired(token)) {
+            request.setAttribute("TOKEN_EXPIRED", true);
+            return null;
+        }
+
         if (jwtProvider.validateToken(token)) {
             Claims claims = jwtProvider.parseClaims(token);
             Long userId = Long.parseLong(claims.getSubject());

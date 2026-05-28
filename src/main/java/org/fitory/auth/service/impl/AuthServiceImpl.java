@@ -11,6 +11,7 @@ import org.fitory.auth.repository.UserRepository;
 import org.fitory.auth.service.AuthService;
 import org.fitory.auth.service.NicknameGenerator;
 import org.fitory.security.JwtProvider;
+import org.fitory.security.PasswordEncoder;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +20,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
     private final NicknameGenerator nicknameGenerator;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public User signup(SignupRequest request) {
@@ -28,7 +30,7 @@ public class AuthServiceImpl implements AuthService {
 
         User user = User.builder()
                 .email(request.email())
-                .password(request.password())
+                .password(passwordEncoder.encode(request.password()))
                 .role(Role.USER)
                 .name(nicknameGenerator.generate())
                 .build();
@@ -41,7 +43,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
-        if (!user.getPassword().equals(request.password())) {
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
