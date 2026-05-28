@@ -11,6 +11,9 @@ import java.util.List;
 public interface ProductService {
     List<ProductResponse> findAll();
     PageResponse<ProductResponse> findAllByBrandId(Long brandId, int page, int size);
+
+    PageResponse<ProductResponse> findAllByCategoryId(Long categoryId, int page, int size);
+
     PageResponse<ProductResponse> search(ProductSearchRequest request, int page, int size);
 
     ProductResponse findById(Long id);

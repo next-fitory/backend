@@ -11,11 +11,12 @@ public interface ProductRepository {
     Product save(Product product);
     Optional<Product> findById(Long id);
     List<Product> findAll();
-    List<Product> findAllByCategoryId(Long categoryId);
+    List<Product> findAllByCategoryId(Long categoryId, int page, int size);
     List<Product> findAllByOrderByCreatedAtDesc();
     List<Product> findAllByBrandId(Long brandId, int page, int size);
     long countByBrandId(Long brandId);
     List<ProductResponse> search(ProductSearchRequest request, int page, int size);
     long countSearch(ProductSearchRequest request);
     void deleteById(Long id);
+    long countByCategoryId(Long categoryId);
 }

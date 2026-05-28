@@ -91,11 +91,14 @@ public class JooqProductRepository implements ProductRepository {
     }
 
     @Override
-    public List<Product> findAllByCategoryId(Long categoryId) {
+    public List<Product> findAllByCategoryId(Long categoryId, int page, int size) {
         return dsl.select()
                 .from(table(TABLE))
                 .where(field("category_id").eq(categoryId)
                         .and(field("deleted", Boolean.class).isFalse()))
+                .orderBy(field("created_at").desc())
+                .limit(size)
+                .offset((long) page * size)
                 .fetch()
                 .map(this::toProduct);
     }
@@ -202,6 +205,15 @@ public class JooqProductRepository implements ProductRepository {
                 .set(field("updated_at"), LocalDateTime.now())
                 .where(field("id").eq(id).and(field("deleted", Boolean.class).isFalse()))
                 .execute();
+    }
+
+    @Override
+    public long countByCategoryId(Long categoryId) {
+        return dsl.selectCount()
+                .from(table(TABLE))
+                .where(field("category_id").eq(categoryId)
+                        .and(field("deleted", Boolean.class).isFalse()))
+                .fetchOne(0, Long.class);
     }
 
     private Product toProduct(Record r) {
