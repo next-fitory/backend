@@ -17,7 +17,8 @@ public class CorsFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
 
-        resp.setHeader("Access-Control-Allow-Origin", ConfigurationAdapter.getProperty("cors"));
+        String corsPath = ConfigurationAdapter.getProperty("cors") == null ? "http://localhost:3000" : ConfigurationAdapter.getProperty("cors");
+        resp.setHeader("Access-Control-Allow-Origin", corsPath);
         resp.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
         resp.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
         resp.setHeader("Access-Control-Max-Age", "3600");
