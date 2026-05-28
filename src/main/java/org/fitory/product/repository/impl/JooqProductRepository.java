@@ -142,18 +142,18 @@ public class JooqProductRepository implements ProductRepository {
 
     private org.jooq.SelectFieldOrAsterisk[] productWithBrandFields() {
         return new org.jooq.SelectFieldOrAsterisk[]{
-                field("p.id"),
-                field("p.brand_id"),
-                field("p.category_id"),
+                field("p.id").as("id"),
+                field("p.brand_id").as("brand_id"),
+                field("p.category_id").as("category_id"),
                 field("p.name").as("product_name"),
-                field("p.description"),
-                field("p.price"),
-                field("p.discount_rate"),
-                field("p.stock"),
-                field("p.image_url"),
-                field("p.deleted"),
-                field("p.created_at"),
-                field("p.updated_at"),
+                field("p.description").as("description"),
+                field("p.price").as("price"),
+                field("p.discount_rate").as("discount_rate"),
+                field("p.stock").as("stock"),
+                field("p.image_url").as("image_url"),
+                field("p.deleted").as("deleted"),
+                field("p.created_at").as("created_at"),
+                field("p.updated_at").as("updated_at"),
                 field("b.name").as("brand_name")
         };
     }
