@@ -7,6 +7,7 @@ import org.fitory.brand.exception.BrandNotFoundException;
 import org.fitory.cart.exception.CartItemAccessDeniedException;
 import org.fitory.cart.exception.CartItemNotFoundException;
 import org.fitory.product.exception.ProductNotFoundException;
+import org.fitory.review.exception.ReviewAccessDeniedException;
 import org.fitory.review.exception.ReviewNotFoundException;
 import org.fitory.user.exception.UserNotFoundException;
 import org.fitory.userlike.exception.UserLikeNotFoundException;
@@ -44,6 +45,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ReviewNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleReviewNotFound(ReviewNotFoundException e) {
         return ResponseEntity.notFound(ErrorResponse.of(ErrorCode.NOT_FOUND, e.getMessage()));
+    }
+
+    @ExceptionHandler(ReviewAccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleReviewAccessDenied(ReviewAccessDeniedException e) {
+        return ResponseEntity.forbidden(ErrorResponse.of(ErrorCode.FORBIDDEN, e.getMessage()));
     }
 
     @ExceptionHandler(UserLikeNotFoundException.class)

@@ -10,6 +10,6 @@ public interface ReviewService {
     PageResponse<ReviewResponse> findAllByProductId(Long productId, int page, int size);
     ReviewResponse findById(Long id);
     ReviewResponse create(Long userId, CreateReviewRequest request);
-    ReviewResponse update(Long id, UpdateReviewRequest request);
-    void delete(Long id);
+    ReviewResponse update(Long id, Long userId, UpdateReviewRequest request);
+    void delete(Long id, Long userId);
 }

@@ -8,6 +8,7 @@ import org.fitory.review.domain.Review;
 import org.fitory.review.dto.CreateReviewRequest;
 import org.fitory.review.dto.ReviewResponse;
 import org.fitory.review.dto.UpdateReviewRequest;
+import org.fitory.review.exception.ReviewAccessDeniedException;
 import org.fitory.review.exception.ReviewNotFoundException;
 import org.fitory.review.repository.ReviewRepository;
 import org.fitory.review.service.ReviewService;
@@ -70,12 +71,15 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public ReviewResponse update(Long id, UpdateReviewRequest request) {
+    public ReviewResponse update(Long id, Long userId, UpdateReviewRequest request) {
         if (request.rating() < 1 || request.rating() > 5) {
             throw new IllegalArgumentException("Rating must be between 1 and 5");
         }
         Review existing = reviewRepository.findById(id)
                 .orElseThrow(() -> new ReviewNotFoundException(id));
+        if (!existing.getUserId().equals(userId)) {
+            throw new ReviewAccessDeniedException(id);
+        }
         UserResponse user = userService.findById(existing.getUserId());
         Review updated = reviewRepository.save(existing.toBuilder()
                 .content(request.content() != null ? request.content() : existing.getContent())
@@ -86,9 +90,12 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public void delete(Long id) {
-        reviewRepository.findById(id)
+    public void delete(Long id, Long userId) {
+        Review existing = reviewRepository.findById(id)
                 .orElseThrow(() -> new ReviewNotFoundException(id));
+        if (!existing.getUserId().equals(userId)) {
+            throw new ReviewAccessDeniedException(id);
+        }
         reviewRepository.deleteById(id);
     }
 
