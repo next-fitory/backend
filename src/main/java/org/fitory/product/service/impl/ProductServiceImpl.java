@@ -6,6 +6,7 @@ import org.fitory.common.dto.PageResponse;
 import org.fitory.product.domain.Product;
 import org.fitory.product.dto.CreateProductRequest;
 import org.fitory.product.dto.ProductResponse;
+import org.fitory.product.dto.ProductSearchRequest;
 import org.fitory.product.dto.UpdateProductRequest;
 import org.fitory.product.exception.ProductNotFoundException;
 import org.fitory.product.repository.ProductRepository;
@@ -26,6 +27,13 @@ public class ProductServiceImpl implements ProductService {
                 .map(ProductResponse::of)
                 .toList();
         long total = productRepository.countByBrandId(brandId);
+        return PageResponse.of(content, page, size, total);
+    }
+
+    @Override
+    public PageResponse<ProductResponse> search(ProductSearchRequest request, int page, int size) {
+        List<ProductResponse> content = productRepository.search(request, page, size);
+        long total = productRepository.countSearch(request);
         return PageResponse.of(content, page, size, total);
     }
 

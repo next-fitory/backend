@@ -3,7 +3,10 @@ package org.fitory.product.repository.impl;
 import core.annotation.Repository;
 import org.fitory.infra.DatabaseConfig;
 import org.fitory.product.domain.Product;
+import org.fitory.product.dto.ProductResponse;
+import org.fitory.product.dto.ProductSearchRequest;
 import org.fitory.product.repository.ProductRepository;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 
@@ -127,6 +130,69 @@ public class JooqProductRepository implements ProductRepository {
                 .where(field("brand_id").eq(brandId)
                         .and(field("deleted", Boolean.class).isFalse()))
                 .fetchOne(0, Long.class);
+    }
+
+    @Override
+    public List<ProductResponse> search(ProductSearchRequest request, int page, int size) {
+        Condition condition = searchCondition(request);
+        return dsl.select(
+                        field("p.id").as("p_id"),
+                        field("p.name").as("name"),
+                        field("p.price").as("price"),
+                        field("p.discount_rate").as("discount_rate"),
+                        field("p.stock").as("stock"),
+                        field("p.image_url").as("image_url"),
+                        field("b.name").as("brand_name")
+                )
+                .from(table("products").as("p"))
+                .join(table("brands").as("b")).on(field("p.brand_id").eq(field("b.id")))
+                .join(table("categories").as("c")).on(field("p.category_id").eq(field("c.id")))
+                .where(condition)
+                .orderBy(field("p.created_at").desc())
+                .limit(size)
+                .offset((long) page * size)
+                .fetch()
+                .map(this::toProductResponse);
+    }
+
+    @Override
+    public long countSearch(ProductSearchRequest request) {
+        Condition condition = searchCondition(request);
+        return dsl.selectCount()
+                .from(table("products").as("p"))
+                .join(table("brands").as("b")).on(field("p.brand_id").eq(field("b.id")))
+                .join(table("categories").as("c")).on(field("p.category_id").eq(field("c.id")))
+                .where(condition)
+                .fetchOne(0, Long.class);
+    }
+
+    private Condition searchCondition(ProductSearchRequest req) {
+        Condition condition = field("p.deleted", Boolean.class).isFalse();
+        if (req.categorySlug() != null && !req.categorySlug().isBlank()) {
+            condition = condition.and(field("c.slug").eq(req.categorySlug()));
+        }
+        if (req.brandName() != null && !req.brandName().isBlank()) {
+            condition = condition.and(field("b.name").equalIgnoreCase(req.brandName()));
+        }
+        if (req.keyword() != null && !req.keyword().isBlank()) {
+            condition = condition.and(field("p.name").likeIgnoreCase("%" + req.keyword() + "%"));
+        }
+        return condition;
+    }
+
+    private ProductResponse toProductResponse(Record r) {
+        int price = r.get("price", Integer.class);
+        int discountRate = r.get("discount_rate", Integer.class);
+        return ProductResponse.builder()
+                .id(r.get("p_id", Long.class))
+                .name(r.get("name", String.class))
+                .price(price)
+                .salePrice((int) (price * (100 - discountRate) * 0.01))
+                .discountRate(discountRate)
+                .stock(r.get("stock", Integer.class))
+                .imageUrl(r.get("image_url", String.class))
+                .brandName(r.get("brand_name", String.class))
+                .build();
     }
 
     @Override
