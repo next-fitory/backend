@@ -10,6 +10,7 @@ import org.fitory.example.ProductNotFoundException;
 import org.fitory.review.exception.ReviewNotFoundException;
 import org.fitory.user.exception.UserNotFoundException;
 import org.fitory.userlike.exception.UserLikeNotFoundException;
+import security.TokenExpiredException;
 import security.UnauthorizedException;
 
 @ControllerAdvice
@@ -48,6 +49,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserLikeNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleUserLikeNotFound(UserLikeNotFoundException e) {
         return ResponseEntity.notFound(ErrorResponse.of(ErrorCode.NOT_FOUND, e.getMessage()));
+    }
+
+    @ExceptionHandler(TokenExpiredException.class)
+    public ResponseEntity<ErrorResponse> handleTokenExpired(TokenExpiredException e) {
+        return ResponseEntity.unauthorized(ErrorResponse.of(ErrorCode.UNAUTHORIZED, e.getMessage()));
     }
 
     @ExceptionHandler(UnauthorizedException.class)
