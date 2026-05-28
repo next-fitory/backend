@@ -4,6 +4,7 @@ import core.annotation.Repository;
 import org.fitory.cart.domain.CartItem;
 import org.fitory.cart.repository.CartItemRepository;
 import org.fitory.infra.DatabaseConfig;
+import org.fitory.product.dto.ProductResponse;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 
@@ -77,6 +78,55 @@ public class JooqCartItemRepository implements CartItemRepository {
                 .where(field("user_id").eq(userId))
                 .fetch()
                 .map(this::toCartItem);
+    }
+
+    @Override
+    public List<ProductResponse> findProductsByUserId(Long userId, int page, int size) {
+        return dsl.select(
+                        field("p.id").as("p_id"),
+                        field("p.name").as("name"),
+                        field("p.price").as("price"),
+                        field("p.discount_rate").as("discount_rate"),
+                        field("p.stock").as("stock"),
+                        field("p.image_url").as("image_url"),
+                        field("b.name").as("brand_name")
+                )
+                .from(table("cart_items").as("ci"))
+                .join(table("products").as("p")).on(field("ci.product_id").eq(field("p.id")))
+                .join(table("brands").as("b")).on(field("p.brand_id").eq(field("b.id")))
+                .where(field("ci.user_id").eq(userId)
+                        .and(field("p.deleted", Boolean.class).isFalse()))
+                .orderBy(field("ci.created_at").desc())
+                .limit(size)
+                .offset((long) page * size)
+                .fetch()
+                .map(this::toProductResponse);
+    }
+
+    @Override
+    public long countByUserId(Long userId) {
+        return dsl.selectCount()
+                .from(table("cart_items").as("ci"))
+                .join(table("products").as("p")).on(field("ci.product_id").eq(field("p.id")))
+                .where(field("ci.user_id").eq(userId)
+                        .and(field("p.deleted", Boolean.class).isFalse()))
+                .fetchOne(0, Long.class);
+    }
+
+    private ProductResponse toProductResponse(Record r) {
+        int price = r.get("price", Integer.class);
+        int discountRate = r.get("discount_rate", Integer.class);
+        int salePrice = (int) (price * (100 - discountRate) * 0.01);
+        return ProductResponse.builder()
+                .id(r.get("p_id", Long.class))
+                .name(r.get("name", String.class))
+                .price(price)
+                .salePrice(salePrice)
+                .discountRate(discountRate)
+                .stock(r.get("stock", Integer.class))
+                .imageUrl(r.get("image_url", String.class))
+                .brandName(r.get("brand_name", String.class))
+                .build();
     }
 
     @Override

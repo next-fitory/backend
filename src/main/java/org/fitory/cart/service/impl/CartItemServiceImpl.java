@@ -10,9 +10,10 @@ import org.fitory.cart.exception.CartItemAccessDeniedException;
 import org.fitory.cart.exception.CartItemNotFoundException;
 import org.fitory.cart.repository.CartItemRepository;
 import org.fitory.cart.service.CartItemService;
+import org.fitory.common.dto.PageResponse;
+import org.fitory.product.dto.ProductResponse;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -20,10 +21,10 @@ public class CartItemServiceImpl implements CartItemService {
     private final CartItemRepository cartItemRepository;
 
     @Override
-    public List<CartItemResponse> findAllByUserId(Long userId) {
-        return cartItemRepository.findAllByUserId(userId).stream()
-                .map(CartItemResponse::of)
-                .toList();
+    public PageResponse<ProductResponse> findCartProducts(Long userId, int page, int size) {
+        List<ProductResponse> content = cartItemRepository.findProductsByUserId(userId, page, size);
+        long total = cartItemRepository.countByUserId(userId);
+        return PageResponse.of(content, page, size, total);
     }
 
     @Override
