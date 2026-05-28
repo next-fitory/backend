@@ -66,6 +66,10 @@ public class ConfigurationAdapter {
         return properties.get(key);
     }
 
+    public static String getPropertyOrDefault(String key, String defaultValue) {
+        return properties.getOrDefault(key, defaultValue);
+    }
+
     public static String getProperty(String key, String defaultValue) {
         return properties.getOrDefault(key, defaultValue);
     }
