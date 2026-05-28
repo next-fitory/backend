@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import mvc.ResponseEntity;
 import mvc.annotation.*;
 import org.fitory.auth.domain.User;
+import org.fitory.common.dto.PageResponse;
 import org.fitory.order.domain.Order;
 import org.fitory.order.dto.OrderCreateRequest;
 import org.fitory.order.dto.OrderItemResponse;
@@ -24,13 +25,18 @@ public class OrderController {
 
     // GET /api/orders (내 주문 목록 조회)
     @GetMapping
-    public ResponseEntity<List<OrderResponse>> getMyOrders(@CurrentUser User user) {
+    public ResponseEntity<PageResponse<OrderResponse>> getMyOrders(
+            @CurrentUser User user,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size
+    ) {
         if (user == null) {
             return ResponseEntity.unauthorized(null);
         }
-        List<OrderResponse> response = orderService.getMyOrders(user.getId()).stream()
-                .map(OrderResponse::from)
-                .collect(Collectors.toList());
+        int p = page != null ? page : 0;
+        int s = size != null ? size : 10;
+
+        PageResponse<OrderResponse> response = orderService.getMyOrders(user.getId(), p, s);
 
         return ResponseEntity.ok(response);
     }

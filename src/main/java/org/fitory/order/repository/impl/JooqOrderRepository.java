@@ -64,13 +64,24 @@ public class JooqOrderRepository implements OrderRepository {
     }
 
     @Override
-    public List<Order> findAllByUserId(Long userId) {
+    public List<Order> findAllByUserId(Long userId, int limit, int offset) {
         return dsl.select()
                 .from(table(TABLE))
                 .where(field("user_id").eq(userId))
                 .orderBy(field("created_at").desc())
+                .limit(limit)
+                .offset(offset)
                 .fetch()
                 .map(this::toOrder);
+    }
+
+    @Override
+    public long countByUserId(Long userId) {
+        Long count = dsl.selectCount()
+                .from(table(TABLE))
+                .where(field("user_id").eq(userId))
+                .fetchOne(0, Long.class);
+        return count != null ? count : 0L;
     }
 
     private Order toOrder(Record record) {
