@@ -20,7 +20,7 @@ public record ProductResponse(Long id, Long brandId, Long categoryId, String nam
                 .discountRate(product.getDiscountRate())
                 .stock(product.getStock())
                 .imageUrl(product.getImageUrl())
-                .brandName("")
+                .brandName(product.getBrandName())
                 .createdAt(LocalDateTimeFormatter.date(product.getCreatedAt()))
                 .updatedAt(LocalDateTimeFormatter.date(product.getUpdatedAt()))
                 .build();

@@ -74,56 +74,61 @@ public class JooqProductRepository implements ProductRepository {
 
     @Override
     public Optional<Product> findById(Long id) {
-        return dsl.select()
-                .from(table(TABLE))
-                .where(field("id").eq(id).and(field("deleted", Boolean.class).isFalse()))
+        return dsl.select(productWithBrandFields())
+                .from(table("products").as("p"))
+                .leftJoin(table("brands").as("b")).on(field("p.brand_id").eq(field("b.id")))
+                .where(field("p.id").eq(id).and(field("p.deleted", Boolean.class).isFalse()))
                 .fetchOptional()
-                .map(this::toProduct);
+                .map(this::toProductWithBrand);
     }
 
     @Override
     public List<Product> findAll() {
-        return dsl.select()
-                .from(table(TABLE))
-                .where(field("deleted", Boolean.class).isFalse())
+        return dsl.select(productWithBrandFields())
+                .from(table("products").as("p"))
+                .leftJoin(table("brands").as("b")).on(field("p.brand_id").eq(field("b.id")))
+                .where(field("p.deleted", Boolean.class).isFalse())
                 .fetch()
-                .map(this::toProduct);
+                .map(this::toProductWithBrand);
     }
 
     @Override
     public List<Product> findAllByCategoryId(Long categoryId, int page, int size) {
-        return dsl.select()
-                .from(table(TABLE))
-                .where(field("category_id").eq(categoryId)
-                        .and(field("deleted", Boolean.class).isFalse()))
-                .orderBy(field("created_at").desc())
+        return dsl.select(productWithBrandFields())
+                .from(table("products").as("p"))
+                .leftJoin(table("brands").as("b")).on(field("p.brand_id").eq(field("b.id")))
+                .where(field("p.category_id").eq(categoryId)
+                        .and(field("p.deleted", Boolean.class).isFalse()))
+                .orderBy(field("p.created_at").desc())
                 .limit(size)
                 .offset((long) page * size)
                 .fetch()
-                .map(this::toProduct);
+                .map(this::toProductWithBrand);
     }
 
     @Override
     public List<Product> findAllByOrderByCreatedAtDesc() {
-        return dsl.select()
-                .from(table(TABLE))
-                .where(field("deleted", Boolean.class).isFalse())
-                .orderBy(field("created_at").desc())
+        return dsl.select(productWithBrandFields())
+                .from(table("products").as("p"))
+                .leftJoin(table("brands").as("b")).on(field("p.brand_id").eq(field("b.id")))
+                .where(field("p.deleted", Boolean.class).isFalse())
+                .orderBy(field("p.created_at").desc())
                 .fetch()
-                .map(this::toProduct);
+                .map(this::toProductWithBrand);
     }
 
     @Override
     public List<Product> findAllByBrandId(Long brandId, int page, int size) {
-        return dsl.select()
-                .from(table(TABLE))
-                .where(field("brand_id").eq(brandId)
-                        .and(field("deleted", Boolean.class).isFalse()))
-                .orderBy(field("created_at").desc())
+        return dsl.select(productWithBrandFields())
+                .from(table("products").as("p"))
+                .leftJoin(table("brands").as("b")).on(field("p.brand_id").eq(field("b.id")))
+                .where(field("p.brand_id").eq(brandId)
+                        .and(field("p.deleted", Boolean.class).isFalse()))
+                .orderBy(field("p.created_at").desc())
                 .limit(size)
                 .offset((long) page * size)
                 .fetch()
-                .map(this::toProduct);
+                .map(this::toProductWithBrand);
     }
 
     @Override
@@ -133,6 +138,42 @@ public class JooqProductRepository implements ProductRepository {
                 .where(field("brand_id").eq(brandId)
                         .and(field("deleted", Boolean.class).isFalse()))
                 .fetchOne(0, Long.class);
+    }
+
+    private org.jooq.SelectFieldOrAsterisk[] productWithBrandFields() {
+        return new org.jooq.SelectFieldOrAsterisk[]{
+                field("p.id"),
+                field("p.brand_id"),
+                field("p.category_id"),
+                field("p.name").as("product_name"),
+                field("p.description"),
+                field("p.price"),
+                field("p.discount_rate"),
+                field("p.stock"),
+                field("p.image_url"),
+                field("p.deleted"),
+                field("p.created_at"),
+                field("p.updated_at"),
+                field("b.name").as("brand_name")
+        };
+    }
+
+    private Product toProductWithBrand(Record r) {
+        return Product.builder()
+                .id(r.get("id", Long.class))
+                .brandId(r.get("brand_id", Long.class))
+                .categoryId(r.get("category_id", Long.class))
+                .name(r.get("product_name", String.class))
+                .description(r.get("description", String.class))
+                .price(r.get("price", Integer.class))
+                .discountRate(r.get("discount_rate", Integer.class))
+                .stock(r.get("stock", Integer.class))
+                .imageUrl(r.get("image_url", String.class))
+                .brandName(r.get("brand_name", String.class))
+                .deleted(r.get("deleted", Boolean.class))
+                .createdAt(r.get("created_at", LocalDateTime.class))
+                .updatedAt(r.get("updated_at", LocalDateTime.class))
+                .build();
     }
 
     @Override
