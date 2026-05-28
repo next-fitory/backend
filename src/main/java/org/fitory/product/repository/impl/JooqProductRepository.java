@@ -108,6 +108,28 @@ public class JooqProductRepository implements ProductRepository {
     }
 
     @Override
+    public List<Product> findAllByBrandId(Long brandId, int page, int size) {
+        return dsl.select()
+                .from(table(TABLE))
+                .where(field("brand_id").eq(brandId)
+                        .and(field("deleted", Boolean.class).isFalse()))
+                .orderBy(field("created_at").desc())
+                .limit(size)
+                .offset((long) page * size)
+                .fetch()
+                .map(this::toProduct);
+    }
+
+    @Override
+    public long countByBrandId(Long brandId) {
+        return dsl.selectCount()
+                .from(table(TABLE))
+                .where(field("brand_id").eq(brandId)
+                        .and(field("deleted", Boolean.class).isFalse()))
+                .fetchOne(0, Long.class);
+    }
+
+    @Override
     public void deleteById(Long id) {
         dsl.update(table(TABLE))
                 .set(field("deleted"), true)

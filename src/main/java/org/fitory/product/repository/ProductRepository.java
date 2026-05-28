@@ -11,5 +11,7 @@ public interface ProductRepository {
     List<Product> findAll();
     List<Product> findAllByCategoryId(Long categoryId);
     List<Product> findAllByOrderByCreatedAtDesc();
+    List<Product> findAllByBrandId(Long brandId, int page, int size);
+    long countByBrandId(Long brandId);
     void deleteById(Long id);
 }

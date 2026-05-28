@@ -2,6 +2,7 @@ package org.fitory.product.service.impl;
 
 import core.annotation.Service;
 import lombok.RequiredArgsConstructor;
+import org.fitory.common.dto.PageResponse;
 import org.fitory.product.domain.Product;
 import org.fitory.product.dto.CreateProductRequest;
 import org.fitory.product.dto.ProductResponse;
@@ -17,6 +18,16 @@ import java.util.List;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+
+    @Override
+    public PageResponse<ProductResponse> findAllByBrandId(Long brandId, int page, int size) {
+        List<ProductResponse> content = productRepository.findAllByBrandId(brandId, page, size)
+                .stream()
+                .map(ProductResponse::of)
+                .toList();
+        long total = productRepository.countByBrandId(brandId);
+        return PageResponse.of(content, page, size, total);
+    }
 
     @Override
     public List<ProductResponse> findAll() {
