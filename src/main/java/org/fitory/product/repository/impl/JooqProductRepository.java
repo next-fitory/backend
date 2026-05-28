@@ -96,7 +96,7 @@ public class JooqProductRepository implements ProductRepository {
     public List<Product> findAllByCategoryId(Long categoryId, int page, int size) {
         return dsl.select(productWithBrandFields())
                 .from(table("products").as("p"))
-                .leftJoin(table("categories").as("b")).on(field("p.brand_id").eq(field("b.id")))
+                .leftJoin(table("categories").as("b")).on(field("p.category_id").eq(field("b.id")))
                 .where(field("p.category_id").eq(categoryId)
                         .and(field("p.deleted", Boolean.class).isFalse()))
                 .orderBy(field("p.created_at").desc())
