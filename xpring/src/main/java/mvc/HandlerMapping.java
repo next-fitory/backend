@@ -84,25 +84,35 @@ public class HandlerMapping {
             return Optional.empty();
         }
 
+        // 첫 번째 매칭이 아닌 가장 구체적인(path variable 최소) 핸들러를 선택
+        // handlers는 정렬되어 있으므로 0-variable 매칭 즉시 break 가능 (성능)
+        // 정렬이 환경에 따라 보장되지 않을 수 있으므로 정확성은 여기서 담보
         String uri = req.getRequestURI();
+        HandlerExecution bestMatch = null;
+        int bestVarCount = Integer.MAX_VALUE;
+
         for (HandlerMethod handler : handlers) {
             if (handler.getHttpMethod() != httpMethod) continue;
+            List<String> names = handler.getPathVariableNames();
+            if (names.size() >= bestVarCount) continue;
+
             Matcher m = handler.getUriPattern().matcher(uri);
             if (m.matches()) {
                 Map<String, String> pathVars = new LinkedHashMap<>();
-                List<String> names = handler.getPathVariableNames();
                 for (int i = 0; i < names.size(); i++) {
                     pathVars.put(names.get(i), m.group(i + 1));
                 }
-                HandlerExecution execution = new HandlerExecution(handler, pathVars);
-                // path variable이 없는 라우트만 캐싱 — 가변 URI를 키로 쓰면 캐시가 무한 증가함
-                if (names.isEmpty()) {
-                    routeCache.put(cacheKey, execution);
-                }
-                return Optional.of(execution);
+                bestMatch = new HandlerExecution(handler, pathVars);
+                bestVarCount = names.size();
+                if (bestVarCount == 0) break;
             }
         }
-        return Optional.empty();
+
+        if (bestMatch == null) return Optional.empty();
+        if (bestMatch.handler().getPathVariableNames().isEmpty()) {
+            routeCache.put(cacheKey, bestMatch);
+        }
+        return Optional.of(bestMatch);
     }
 
     private static boolean isRestController(Class<?> cls) {
