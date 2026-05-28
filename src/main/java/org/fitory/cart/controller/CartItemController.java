@@ -7,10 +7,10 @@ import mvc.annotation.*;
 import org.fitory.auth.domain.User;
 import org.fitory.cart.dto.AddCartItemRequest;
 import org.fitory.cart.dto.CartItemResponse;
+import org.fitory.cart.dto.CartProductResponse;
 import org.fitory.cart.dto.UpdateCartItemRequest;
 import org.fitory.cart.service.CartItemService;
 import org.fitory.common.dto.PageResponse;
-import org.fitory.product.dto.ProductResponse;
 import security.Authentication;
 import security.annotation.CurrentUser;
 
@@ -21,7 +21,7 @@ public class CartItemController {
     private final CartItemService cartItemService;
 
     @GetMapping
-    public ResponseEntity<PageResponse<ProductResponse>> getCart(
+    public ResponseEntity<PageResponse<CartProductResponse>> getCart(
             @CurrentUser Authentication auth,
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size) {

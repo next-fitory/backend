@@ -2,9 +2,11 @@ package org.fitory.cart.repository.impl;
 
 import core.annotation.Repository;
 import org.fitory.cart.domain.CartItem;
+import org.fitory.cart.dto.CartProductResponse;
 import org.fitory.cart.repository.CartItemRepository;
 import org.fitory.infra.DatabaseConfig;
 import org.fitory.product.dto.ProductResponse;
+import org.fitory.util.LocalDateTimeFormatter;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 
@@ -81,7 +83,7 @@ public class JooqCartItemRepository implements CartItemRepository {
     }
 
     @Override
-    public List<ProductResponse> findProductsByUserId(Long userId, int page, int size) {
+    public List<CartProductResponse> findCartProductsByUserId(Long userId, int page, int size) {
         return dsl.select(
                         field("p.id").as("p_id"),
                         field("p.name").as("name"),
@@ -89,7 +91,10 @@ public class JooqCartItemRepository implements CartItemRepository {
                         field("p.discount_rate").as("discount_rate"),
                         field("p.stock").as("stock"),
                         field("p.image_url").as("image_url"),
-                        field("b.name").as("brand_name")
+                        field("b.name").as("brand_name"),
+                        field("ci.quantity").as("quantity"),
+                        field("ci.created_at").as("created_at"),
+                        field("ci.updated_at").as("updated_at")
                 )
                 .from(table("cart_items").as("ci"))
                 .join(table("products").as("p")).on(field("ci.product_id").eq(field("p.id")))
@@ -100,7 +105,7 @@ public class JooqCartItemRepository implements CartItemRepository {
                 .limit(size)
                 .offset((long) page * size)
                 .fetch()
-                .map(this::toProductResponse);
+                .map(this::toCartProductResponse);
     }
 
     @Override
@@ -113,11 +118,11 @@ public class JooqCartItemRepository implements CartItemRepository {
                 .fetchOne(0, Long.class);
     }
 
-    private ProductResponse toProductResponse(Record r) {
+    private CartProductResponse toCartProductResponse(Record r) {
         int price = r.get("price", Integer.class);
         int discountRate = r.get("discount_rate", Integer.class);
         int salePrice = (int) (price * (100 - discountRate) * 0.01);
-        return ProductResponse.builder()
+        ProductResponse product = ProductResponse.builder()
                 .id(r.get("p_id", Long.class))
                 .name(r.get("name", String.class))
                 .price(price)
@@ -126,6 +131,12 @@ public class JooqCartItemRepository implements CartItemRepository {
                 .stock(r.get("stock", Integer.class))
                 .imageUrl(r.get("image_url", String.class))
                 .brandName(r.get("brand_name", String.class))
+                .build();
+        return CartProductResponse.builder()
+                .product(product)
+                .quantity(r.get("quantity", Integer.class))
+                .createdAt(LocalDateTimeFormatter.dateTime(r.get("created_at", LocalDateTime.class)))
+                .updatedAt(LocalDateTimeFormatter.dateTime(r.get("updated_at", LocalDateTime.class)))
                 .build();
     }
 
