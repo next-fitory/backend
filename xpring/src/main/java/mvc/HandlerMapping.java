@@ -23,6 +23,11 @@ public class HandlerMapping {
         beanFactory.getBeans().stream()
                 .filter(bean -> isRestController(bean.getClass()))
                 .forEach(this::registerController);
+        // path variable 개수 오름차순 → 정적 세그먼트가 많은(구체적인) 경로를 먼저 매칭
+        // 같은 개수면 경로 길이 내림차순 → /products/{id}/comments가 /products/{id}보다 우선
+        handlers.sort(Comparator
+                .comparingInt((HandlerMethod h) -> h.getPathVariableNames().size())
+                .thenComparingInt(h -> -h.getPathTemplate().length()));
     }
 
     private void registerController(Object controller) {

@@ -11,6 +11,7 @@ public class HandlerMethod {
     private final Object controller;
     private final Method method;
     private final HttpMethod httpMethod;
+    private final String pathTemplate;
     private final Pattern uriPattern;
     private final List<String> pathVariableNames;
 
@@ -18,6 +19,7 @@ public class HandlerMethod {
         this.controller = controller;
         this.method = method;
         this.httpMethod = httpMethod;
+        this.pathTemplate = pathTemplate;
         List<String> varNames = new ArrayList<>();
         this.uriPattern = compileTemplate(pathTemplate, varNames);
         this.pathVariableNames = Collections.unmodifiableList(varNames);
@@ -42,6 +44,7 @@ public class HandlerMethod {
     public Object getController() { return controller; }
     public Method getMethod() { return method; }
     public HttpMethod getHttpMethod() { return httpMethod; }
+    public String getPathTemplate() { return pathTemplate; }
     public Pattern getUriPattern() { return uriPattern; }
     public List<String> getPathVariableNames() { return pathVariableNames; }
 }
