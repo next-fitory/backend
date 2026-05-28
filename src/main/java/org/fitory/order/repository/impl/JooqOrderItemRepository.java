@@ -62,9 +62,19 @@ public class JooqOrderItemRepository implements OrderItemRepository {
 
     @Override
     public List<OrderItem> findAllByOrderId(Long orderId) {
-        return dsl.select()
+        return dsl.select(
+                        field(TABLE + ".id"),
+                        field(TABLE + ".order_id"),
+                        field(TABLE + ".product_id"),
+                        field(TABLE + ".quantity"),
+                        field(TABLE + ".unit_price"),
+                        field(TABLE + ".created_at"),
+                        field("products.name").as("product_name"),
+                        field("products.image_url")
+                )
                 .from(table(TABLE))
-                .where(field("order_id").eq(orderId))
+                .leftJoin(table("products")).on(field(TABLE + ".product_id").eq(field("products.id")))
+                .where(field(TABLE + ".order_id").eq(orderId))
                 .fetch()
                 .map(this::toOrderItem);
     }
@@ -74,6 +84,8 @@ public class JooqOrderItemRepository implements OrderItemRepository {
                 .id(record.get("id", Long.class))
                 .orderId(record.get("order_id", Long.class))
                 .productId(record.get("product_id", Long.class))
+                .productName(record.get("product_name", String.class))
+                .imageUrl(record.get("image_url", String.class))
                 .quantity(record.get("quantity", Integer.class))
                 .unitPrice(record.get("unit_price", BigDecimal.class))
                 .createdAt(record.get("created_at", LocalDateTime.class))
