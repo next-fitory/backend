@@ -63,14 +63,14 @@ public class JooqOrderItemRepository implements OrderItemRepository {
     @Override
     public List<OrderItem> findAllByOrderId(Long orderId) {
         return dsl.select(
-                        field(TABLE + ".id"),
-                        field(TABLE + ".order_id"),
-                        field(TABLE + ".product_id"),
-                        field(TABLE + ".quantity"),
-                        field(TABLE + ".unit_price"),
-                        field(TABLE + ".created_at"),
+                        field(TABLE + ".id").as("id"),
+                        field(TABLE + ".order_id").as("order_id"),
+                        field(TABLE + ".product_id").as("product_id"),
+                        field(TABLE + ".quantity").as("quantity"),
+                        field(TABLE + ".unit_price").as("unit_price"),
+                        field(TABLE + ".created_at").as("created_at"),
                         field("products.name").as("product_name"),
-                        field("products.image_url")
+                        field("products.image_url").as("image_url")
                 )
                 .from(table(TABLE))
                 .leftJoin(table("products")).on(field(TABLE + ".product_id").eq(field("products.id")))
