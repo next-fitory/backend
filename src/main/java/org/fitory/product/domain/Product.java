@@ -21,6 +21,7 @@ public class Product {
     private int discountRate;
     private int stock;
     private String imageUrl;
+    private String brandName;
     private boolean deleted;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -1,628 +1,774 @@
-# Fitory Backend
+<div align="center">
 
-패션 이커머스 플랫폼 **Fitory**의 백엔드 서버입니다. 자체 제작한 경량 프레임워크 **Xpring** 위에서 동작하며, 상품 관리·장바구니·주문·리뷰·브랜드·카테고리·좋아요 등 핵심 도메인을 제공합니다.
+<img src="https://capsule-render.vercel.app/api?type=waving&height=120&color=0:0f172a,100:1e293b&section=header"/>
+
+<a id="top"></a>
+
+# ⚙️ FITORY BACKEND
+
+### High Performance Fashion Commerce API
+
+### powered by Custom MVC Framework **Xpring**
+
+<br/>
+
+<img src="https://img.shields.io/badge/Java_21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white"/>
+<img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white"/>
+<img src="https://img.shields.io/badge/jOOQ-0080c0?style=for-the-badge"/>
+<img src="https://img.shields.io/badge/Tomcat_11-F8DC75?style=for-the-badge&logo=apachetomcat&logoColor=black"/>
+<img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge"/>
+
+<br/><br/>
+
+<table>
+<tr>
+<td align="center" width="260">
+
+### ⚙️ Custom MVC
+
+DispatcherServlet  
+HandlerMapping  
+IoC Container
+
+</td>
+
+<td align="center" width="260">
+
+### 🛡 Stateless Security
+
+JWT Authentication  
+Security Filter  
+ThreadLocal Context
+
+</td>
+
+<td align="center" width="260">
+
+### 🚀 SQL Optimization
+
+jOOQ Type Safety  
+pg_trgm Search  
+Batch Insert
+
+</td>
+</tr>
+</table>
+
+<br/>
+
+외부 프레임워크 의존성을 배제하고  
+순수 Java 기반으로 직접 구현한 MVC 프레임워크 **Xpring** 위에서 동작하는  
+고성능 패션 커머스 API 서버입니다.
+
+<br/>
+
+> Compile-Time Type Safety · Layered Architecture · Embedded Tomcat · Stateless Authentication
+
+</div>
 
 ---
 
-## Architecture
+# 📚 Table of Contents
+
+- [👨‍💻 Team & Contributions](#-team--contributions)
+- [🏗 Framework: Xpring](#-framework-xpring)
+- [🧠 Core Logic](#-core-logic)
+- [🏛 Architecture & Request Flow](#-architecture--request-flow)
+- [🚀 CI/CD & Deployment Architecture](#-cicd--deployment-architecture)
+- [🗄 Entity-Relationship Diagram (ERD)](#-entity-relationship-diagram-erd)
+- [🛠 Infrastructure Design Justification](#-infrastructure-design-justification)
+- [🔥 Engineering Challenge & Troubleshooting](#-engineering-challenge--troubleshooting)
+- [📄 API Documentation](#-api-documentation)
+- [📂 Project Structure](#-project-structure)
+- [⚙️ Environment Variables](#️-environment-variables)
+- [🚀 Build & Run](#-build--run)
+- [🗃 Database](#-database)
+- [🔄 CI / CD](#-ci--cd)
+
+---
+
+# 👨‍💻 Team & Contributions
+
+계층(Layer)과 도메인을 명확히 분리하여 각 팀원이 핵심 기능을 전담했습니다.
+
+<table>
+<tr>
+<td align="center" width="180px">
+
+<a href="https://github.com/chan-nni">
+<img src="https://avatars.githubusercontent.com/chan-nni" width="120px;" alt="강찬미"/>
+</a>
+
+### 👑 강찬미
+
+</td>
+
+<td>
+
+### 🛡️ Security & 📦 Order
+
+- JWT 기반 Stateless 인증 아키텍처 설계
+- Security Filter 및 인증 컨텍스트 구현
+- jOOQ 기반 주문 트랜잭션 및 페이징 처리
+- Batch Insert 기반 주문 성능 최적화
+
+</td>
+</tr>
+
+<tr>
+<td align="center" width="180px">
+
+<a href="https://github.com/yyubin">
+<img src="https://avatars.githubusercontent.com/yyubin" width="120px;" alt="박유빈"/>
+</a>
+
+### 💻 박유빈
+
+</td>
+
+<td>
+
+### ⚙️ Framework & Core Domains
+
+- Xpring MVC Framework 자체 구현
+- DispatcherServlet · IoC Container 설계
+- 리뷰 · 좋아요 · 카테고리 도메인 구현
+
+</td>
+</tr>
+
+<tr>
+<td align="center" width="180px">
+
+<a href="https://github.com/dh0250">
+<img src="https://avatars.githubusercontent.com/dh0250" width="120px;" alt="한다현"/>
+</a>
+
+### 🛒 한다현
+
+</td>
+
+<td>
+
+### 🛍 Product & Cart
+
+- 장바구니 상태 동기화 및 수량 제어
+- pg_trgm 기반 상품 검색 최적화
+- 상품 검색 및 큐레이션 API 구현
+
+</td>
+</tr>
+</table>
+
+<div align="right">
+
+[🔝 Back to Top](#top)
+
+</div>
+
+---
+
+# 🏗 Framework: Xpring
+
+Spring 없이 순수 Java 리플렉션과 서블릿을 활용하여 직접 구현한 웹 프레임워크입니다.
+
+| Component | Description |
+|---|---|
+| `DispatcherServlet` | Front Controller |
+| `HandlerMapping` | Regex 기반 라우팅 |
+| `HandlerAdapter` | Argument Resolver |
+| `BeanFactory` | Reflection 기반 IoC Container |
+| `ExceptionHandlerResolver` | 전역 예외 처리 |
+
+<br>
+
+### 🎯 Framework Goal
+
+- HTTP 요청 흐름 직접 제어
+- Reflection 기반 DI 구조 구현
+- Front Controller 패턴 직접 설계
+- MVC 내부 동작 원리 이해
+
+<div align="right">
+
+[🔝 Back to Top](#top)
+
+</div>
+
+---
+
+# 🧠 Core Logic
+
+프로젝트의 핵심 아키텍처 및 성능 최적화 로직입니다.
+
+## 🔐 JWT Stateless Authentication
+
+담당: **강찬미 (Security)**
+
+세션 기반 인증 대신 JWT 기반 상태 비저장(Stateless) 인증 구조를 직접 구현했습니다.
+
+### 핵심 흐름
+
+```mermaid
+sequenceDiagram
+    Client->>JwtSecurityFilter: Authorization Header
+    JwtSecurityFilter->>JwtProvider: validateToken()
+    JwtProvider-->>JwtSecurityFilter: Claims
+    JwtSecurityFilter->>SecurityContextHolder: Save Authentication
+    JwtSecurityFilter->>Controller: Proceed Request
+```
+
+### 핵심 포인트
+
+- `SecurityFilter` 기반 인증 처리
+- `ThreadLocal SecurityContext` 활용
+- JWT 만료 검증 및 사용자 인증 객체 생성
+- MVC Layer와 인증 책임 완전 분리
+
+```java
+if (jwtProvider.validateToken(token)) {
+
+    Claims claims = jwtProvider.parseClaims(token);
+
+    Long userId = Long.parseLong(claims.getSubject());
+
+    Optional<User> userOpt = userRepository.findById(userId);
+
+    if (userOpt.isPresent()) {
+        return new JwtAuthentication(userOpt.get());
+    }
+}
+```
+
+---
+
+## ⚡ Batch Insert 기반 주문 처리 최적화
+
+담당: **강찬미 (Order)**
+
+여러 개의 주문 상품(OrderItem)을 Batch Insert 기반으로 처리하여 DB I/O 비용을 최소화했습니다.
+
+```java
+dsl.batch(
+    orderItems.stream()
+        .map(item ->
+            dsl.insertInto(ORDER_ITEMS)
+        )
+        .toList()
+).execute();
+```
+
+### 적용 효과
+
+- DB Round Trip 감소
+- 주문 처리 성능 개선
+- 트랜잭션 효율 향상
+
+---
+
+## 🔍 PostgreSQL pg_trgm 검색 최적화
+
+담당: **한다현 (Product & Cart)**
+
+`LIKE '%keyword%'` 검색 성능 문제를 해결하기 위해 `pg_trgm + GIN Index` 기반 검색 최적화를 적용했습니다.
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+CREATE INDEX idx_products_name_trgm
+ON products
+USING gin(name gin_trgm_ops);
+```
+
+### 적용 효과
+
+- Sequential Scan 제거
+- 검색 속도 개선
+- 대용량 상품 검색 최적화
+
+---
+
+## ⚙️ Custom MVC Framework
+
+담당: **박유빈 (Framework & Core)**
+
+Spring 없이 순수 Java 기반 MVC Framework를 직접 구현했습니다.
+
+| Component | Description |
+|---|---|
+| `DispatcherServlet` | Front Controller |
+| `HandlerMapping` | Regex Routing |
+| `HandlerAdapter` | Argument Resolver |
+| `BeanFactory` | IoC Container |
+
+<div align="right">
+
+[🔝 Back to Top](#top)
+
+</div>
+
+---
+
+# 🏛 Architecture & Request Flow
 
 ```mermaid
 flowchart TD
-    Client["Client (Browser / App)"]
+
+    Client["Client"]
 
     subgraph Server["Embedded Tomcat 11"]
+
         CorsFilter["CorsFilter"]
-        JwtFilter["JwtSecurityFilter\n(JWT 파싱 · 만료 감지)"]
+
+        JwtFilter["JwtSecurityFilter"]
+
         DS["DispatcherServlet"]
-        HM["HandlerMapping\n(regex 라우팅 · best-match)"]
-        HA["HandlerAdapter\n(Argument Resolver)"]
-        EHR["ExceptionHandlerResolver\n(@ControllerAdvice)"]
+
+        HM["HandlerMapping"]
+
+        HA["HandlerAdapter"]
+
+        EHR["ExceptionHandlerResolver"]
 
         subgraph Controllers
-            Auth["TokenController\nUserController"]
-            Product["ProductController\nProductCurationController"]
-            Brand["BrandController"]
-            Category["CategoryController"]
-            Cart["CartItemController"]
-            Order["OrderController"]
-            Review["ReviewController\nProductReviewController"]
-            Like["UserLikeController"]
+            Auth["Auth Controller"]
+            Product["Product Controller"]
+            Order["Order Controller"]
         end
 
-        subgraph Services
-            AuthSvc["AuthService"]
-            ProductSvc["ProductService"]
-            CartSvc["CartItemService"]
-            OrderSvc["OrderService"]
-            ReviewSvc["ReviewService"]
-            BrandSvc["BrandService"]
-            LikeSvc["UserLikeService"]
+        subgraph Repositories
+            Repo["Repository Layer (jOOQ)"]
         end
 
-        subgraph Repositories["Repositories (jOOQ)"]
-            JooqProduct["JooqProductRepository"]
-            JooqCart["JooqCartItemRepository"]
-            JooqOrder["JooqOrderRepository"]
-            JooqReview["JooqReviewRepository"]
-            JooqAuth["JooqAuthRepository"]
-            JooqBrand["JooqBrandRepository"]
-            JooqLike["JooqUserLikeRepository"]
-        end
     end
 
-    DB[("PostgreSQL\n+ HikariCP")]
+    DB[("PostgreSQL + HikariCP")]
 
-    Client -->|HTTP| CorsFilter
+    Client --> CorsFilter
     CorsFilter --> JwtFilter
     JwtFilter --> DS
     DS --> HM
     HM --> HA
     HA --> Controllers
-    Controllers --> Services
-    Services --> Repositories
-    Repositories --> DB
+    Controllers --> Repo
+    Repo --> DB
     HA --> EHR
 ```
 
-### Request 흐름
+<div align="right">
 
-| 단계 | 구성요소 | 역할 |
-|------|----------|------|
-| 1 | CorsFilter | CORS preflight 처리, 허용 Origin 검증 |
-| 2 | JwtSecurityFilter | `Authorization` 헤더에서 JWT 파싱, 만료 시 `TOKEN_EXPIRED` attribute 세팅 |
-| 3 | DispatcherServlet | 요청 수신, 전체 흐름 조율 |
-| 4 | HandlerMapping | 정규식 패턴으로 핸들러 탐색 (경로변수 최소 우선) |
-| 5 | HandlerAdapter | `@RequestBody` · `@PathVariable` · `@RequestParam` · `@CurrentUser` 주입 |
-| 6 | Controller → Service → Repository | 비즈니스 로직 수행 |
-| 7 | ExceptionHandlerResolver | `@ControllerAdvice` 기반 전역 예외 처리 |
+[🔝 Back to Top](#top)
+
+</div>
 
 ---
 
-## Tech Stack
+# 🚀 CI/CD & Deployment Architecture
 
-| 영역 | 기술 | 버전 |
-|------|------|------|
-| 언어 | Java | 21 |
-| 웹 프레임워크 | Xpring (자체 제작) | local module |
-| 웹 서버 | Embedded Tomcat | 11.0.12 |
-| SQL 빌더 | jOOQ | 3.20.15 |
-| DB | PostgreSQL | 42.7.11 (JDBC) |
-| 커넥션풀 | HikariCP | 7.0.2 |
-| 인증 | JJWT | 0.11.5 |
-| 비밀번호 | jBCrypt | 0.4 |
-| JSON | Jackson Databind | 3.1.2 |
-| 로깅 | SLF4J + Logback | 2.0.13 / 1.5.6 |
-| 빌드 | Gradle Shadow JAR | 8.1.1 |
-| 테스트 | JUnit 5 | 5.10.0 |
-| CI/CD | GitHub Actions | - |
-| 배포 | Render | - |
+```mermaid
+flowchart LR
 
----
+    Dev((Developer))
 
-## Project Structure
+    GitHub[GitHub Repository]
 
+    Actions[GitHub Actions]
+
+    Render[Render PaaS]
+
+    Tomcat[Embedded Tomcat 11]
+
+    Supabase[(Supabase PostgreSQL)]
+
+    Dev --> GitHub
+
+    GitHub --> Actions
+
+    Actions --> Render
+
+    Render --> Tomcat
+
+    Tomcat <--> Supabase
 ```
+
+<div align="right">
+
+[🔝 Back to Top](#top)
+
+</div>
+
+---
+
+# 🗄 Entity-Relationship Diagram (ERD)
+
+```mermaid
+erDiagram
+
+    USERS ||--o{ CART_ITEMS : has
+    USERS ||--o{ ORDERS : places
+    USERS ||--o{ REVIEWS : writes
+    USERS ||--o{ USERS_LIKES : likes
+
+    BRANDS ||--o{ PRODUCTS : owns
+
+    PRODUCTS ||--o{ CART_ITEMS : added_to
+    PRODUCTS ||--o{ ORDER_ITEMS : ordered_as
+    PRODUCTS ||--o{ REVIEWS : reviewed_by
+
+    ORDERS ||--o{ ORDER_ITEMS : contains
+```
+
+<div align="right">
+
+[🔝 Back to Top](#top)
+
+</div>
+
+---
+
+# 🛠 Infrastructure Design Justification
+
+## 🐘 PostgreSQL
+
+- CHECK Constraint 기반 데이터 정합성 보장
+- `pg_trgm` 기반 상품 검색 최적화
+- 대용량 데이터 처리에 적합한 RDBMS 구조
+
+---
+
+## ⚡ jOOQ
+
+- Compile-Time Type Safety
+- SQL 중심 추상화
+- DB 스키마 기반 코드 생성
+
+---
+
+## 🔐 JWT Authentication
+
+- Stateless 인증 구조
+- Filter 기반 인증 처리
+- ThreadLocal Security Context 관리
+
+<div align="right">
+
+[🔝 Back to Top](#top)
+
+</div>
+
+---
+
+# 🔥 Engineering Challenge & Troubleshooting
+
+## 🚨 PostgreSQL Constraint와 Java Enum 불일치 해결
+
+담당: **강찬미 (Security & Order)**
+
+### 문제 상황
+
+DB는 소문자 상태값을 요구하지만 Java Enum은 대문자 기반으로 동작하여 제약조건 충돌이 발생했습니다.
+
+### 해결 방식
+
+Repository Layer 내부에서 데이터 변환 로직을 캡슐화하여 해결했습니다.
+
+```java
+.set(field("status"),
+     order.getStatus().name().toLowerCase())
+
+.status(OrderStatus.valueOf(
+    record.get("status", String.class).toUpperCase()
+))
+```
+
+### 결과
+
+- DB 정책과 도메인 정책 완전 분리
+- Layered Architecture 유지
+- 도메인 순수성 보장
+
+---
+
+## 🚨 Framework 내부 구조 개선
+
+담당: **박유빈 (Framework & Core)**
+
+- DispatcherServlet 구조 개선 예정
+- Regex Routing 최적화 예정
+- IoC Container 개선 예정
+
+---
+
+## 🚨 상품 검색 성능 최적화
+
+담당: **한다현 (Product & Cart)**
+
+- 상품 검색 인덱싱 전략 개선
+- 검색 응답 속도 최적화
+- 페이징 처리 개선 예정
+
+<div align="right">
+
+[🔝 Back to Top](#top)
+
+</div>
+
+---
+
+# 📄 API Documentation
+
+> 🔒 표시는 `Authorization: Bearer <token>` 헤더가 필요한 API입니다.
+
+---
+
+## 🔐 Auth & Users
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/tokens` | 사용자 로그인 및 JWT 발급 |
+| POST | `/api/users` | 신규 회원가입 |
+| GET | `/api/users/me` | 내 정보 조회 🔒 |
+
+---
+
+## 🛒 Products
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/products` | 전체 상품 목록 |
+| GET | `/api/products/search` | 상품 검색 |
+| GET | `/api/products/new-arrivals` | 신상품 목록 |
+| GET | `/api/products/ranks` | 인기 상품 목록 |
+| GET | `/api/products/{id}` | 상품 상세 조회 |
+| POST | `/api/products` | 상품 등록 |
+| PUT | `/api/products/{id}` | 상품 수정 |
+| DELETE | `/api/products/{id}` | 상품 삭제 |
+| GET | `/api/products/{productId}/reviews` | 특정 상품 리뷰 조회 |
+
+---
+
+## 🏷 Brands & Categories
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/brands` | 브랜드 목록 |
+| GET | `/api/brands/{id}` | 브랜드 상세 |
+| GET | `/api/brands/{id}/products` | 브랜드 상품 목록 |
+| GET | `/api/categories` | 카테고리 목록 |
+
+---
+
+## 🛒 Cart 🔒
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/carts` | 내 장바구니 조회 |
+| POST | `/api/carts` | 장바구니 담기 |
+| PATCH | `/api/carts/{id}` | 장바구니 수량 변경 |
+| DELETE | `/api/carts/{id}` | 개별 항목 삭제 |
+| DELETE | `/api/carts` | 장바구니 전체 비우기 |
+
+---
+
+## 📦 Orders 🔒
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/orders` | 주문 목록 조회 |
+| GET | `/api/orders/{orderId}/items` | 주문 상세 조회 |
+| POST | `/api/orders` | 주문 생성 |
+
+---
+
+## 💬 Reviews & Likes 🔒
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/reviews` | 리뷰 목록 조회 |
+| GET | `/api/reviews/{id}` | 리뷰 상세 조회 |
+| POST | `/api/reviews` | 리뷰 작성 |
+| PUT | `/api/reviews/{id}` | 리뷰 수정 |
+| DELETE | `/api/reviews/{id}` | 리뷰 삭제 |
+| GET | `/api/likes` | 위시리스트 조회 |
+| GET | `/api/likes/products/{productId}` | 상품 좋아요 조회 |
+| POST | `/api/likes` | 위시리스트 추가 |
+| DELETE | `/api/likes?productId={productId}` | 위시리스트 삭제 |
+
+---
+
+## 🚨 Error Responses
+
+| HTTP | Description |
+|---|---|
+| `400` | Bad Request |
+| `401` | Unauthorized |
+| `404` | Not Found |
+| `409` | Conflict |
+| `500` | Internal Server Error |
+
+```json
+{
+  "code": "NOT_FOUND",
+  "message": "상품을 찾을 수 없습니다."
+}
+```
+
+<div align="right">
+
+[🔝 Back to Top](#top)
+
+</div>
+
+---
+
+# 📂 Project Structure
+
+```text
 backend/
 ├── src/main/java/org/fitory/
-│   ├── auth/           # 인증 (로그인 · 회원가입)
-│   ├── brand/          # 브랜드
-│   ├── cart/           # 장바구니
-│   ├── category/       # 카테고리
-│   ├── common/dto/     # PageResponse (공통 페이지네이션)
-│   ├── exception/      # GlobalExceptionHandler, ErrorCode
-│   ├── order/          # 주문
-│   ├── product/        # 상품 + 큐레이션
-│   ├── review/         # 리뷰
-│   ├── security/       # JwtProvider, JwtSecurityFilter, BCryptPasswordEncoder
-│   ├── user/           # 유저 프로필
-│   └── userlike/       # 좋아요(위시리스트)
+│   ├── auth/
+│   ├── brand/
+│   ├── cart/
+│   ├── category/
+│   ├── common/
+│   ├── exception/
+│   ├── order/
+│   ├── product/
+│   ├── review/
+│   ├── security/
+│   ├── user/
+│   └── userlike/
+│
 ├── src/main/resources/
 │   ├── application.yml
 │   └── migration/
-│       └── V1__add_indexes.sql
-└── xpring/             # 경량 MVC 프레임워크 모듈
-    └── src/main/java/
-        ├── boot/       # ApplicationContext 부트스트랩
-        ├── core/       # IoC 컨테이너, ComponentScanner, @Component
-        ├── mvc/        # DispatcherServlet, HandlerMapping, HandlerAdapter
-        ├── log/        # Logger 추상화
-        └── security/   # SecurityContextHolder, @CurrentUser
+│
+└── xpring/
+    ├── boot/
+    ├── core/
+    ├── mvc/
+    ├── log/
+    └── security/
 ```
 
----
+<div align="right">
 
-## API Documentation
+[🔝 Back to Top](#top)
 
-> 인증이 필요한 엔드포인트는 `Authorization: Bearer <token>` 헤더가 필요합니다.
-
-### Auth
-
-#### `POST /api/tokens` — 로그인
-
-**Request Body**
-```json
-{ "email": "user@example.com", "password": "password" }
-```
-
-**Response `200`**
-```json
-{ "accessToken": "<base64-encoded JWT>" }
-```
+</div>
 
 ---
 
-#### `POST /api/users` — 회원가입
+# ⚙️ Environment Variables
 
-**Request Body**
-```json
-{ "email": "user@example.com", "password": "password", "name": "홍길동" }
-```
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | PostgreSQL JDBC URL |
+| `DATABASE_USERNAME` | DB Username |
+| `DATABASE_PASSWORD` | DB Password |
+| `JWT_SECRET_KEY` | JWT Secret Key |
+| `CORS` | Allowed Frontend Origin |
 
-**Response `201`**
-```json
-{ "id": 1, "email": "user@example.com", "name": "홍길동" }
-```
+<div align="right">
 
----
+[🔝 Back to Top](#top)
 
-#### `GET /api/users/me` — 내 정보 조회 `🔒`
-
-**Response `200`**
-```json
-{
-  "id": 1,
-  "email": "user@example.com",
-  "name": "홍길동",
-  "role": "USER",
-  "createdAt": "2024-01-01T00:00:00"
-}
-```
+</div>
 
 ---
 
-### Products
+# 🚀 Build & Run
 
-#### `GET /api/products` — 전체 상품 목록
-
-**Response `200`** `List<ProductResponse>`
-
----
-
-#### `GET /api/products/search` — 상품 검색
-
-| 파라미터 | 타입 | 설명 |
-|----------|------|------|
-| `category` | string | 카테고리 slug (예: `outer`) |
-| `brand` | string | 브랜드명 (예: `KSUBI`) |
-| `keyword` | string | 상품명 검색어 (LIKE) |
-| `page` | int | 페이지 번호 (기본값: `0`) |
-| `size` | int | 페이지 크기 (기본값: `20`) |
-
-**Response `200`**
-```json
-{
-  "content": [ /* ProductResponse[] */ ],
-  "page": 0,
-  "size": 20,
-  "totalElements": 42,
-  "totalPages": 3,
-  "hasNext": true,
-  "hasPrevious": false
-}
-```
-
----
-
-#### `GET /api/products/new-arrivals` — 신상품 목록
-
-**Response `200`** `List<ProductResponse>`
-
----
-
-#### `GET /api/products/ranks` — 인기 상품 목록
-
-**Response `200`** `List<ProductResponse>`
-
----
-
-#### `GET /api/products/{id}` — 상품 상세
-
-**Response `200`**
-```json
-{
-  "id": 1,
-  "name": "레더 재킷",
-  "brandName": "KSUBI",
-  "categorySlug": "outer",
-  "price": 450000,
-  "salePrice": 360000,
-  "discountRate": 20,
-  "stock": 5,
-  "imageUrl": "https://..."
-}
-```
-
----
-
-#### `POST /api/products` — 상품 등록
-
-**Request Body** `CreateProductRequest`
-
-**Response `201`** `ProductResponse`
-
----
-
-#### `PUT /api/products/{id}` — 상품 수정
-
-**Request Body** `UpdateProductRequest`
-
-**Response `200`** `ProductResponse`
-
----
-
-#### `DELETE /api/products/{id}` — 상품 삭제 (soft delete)
-
-**Response `204`**
-
----
-
-#### `GET /api/products/{productId}/reviews` — 상품별 리뷰
-
-| 파라미터 | 기본값 |
-|----------|--------|
-| `page` | `0` |
-| `size` | `10` |
-
-**Response `200`** `PageResponse<ReviewResponse>`
-
----
-
-### Brands
-
-#### `GET /api/brands` — 브랜드 목록
-
-**Response `200`** `List<BrandResponse>`
-
----
-
-#### `GET /api/brands/{id}` — 브랜드 상세
-
-**Response `200`** `BrandResponse`
-
----
-
-#### `GET /api/brands/{id}/products` — 브랜드별 상품
-
-| 파라미터 | 기본값 |
-|----------|--------|
-| `page` | `0` |
-| `size` | `10` |
-
-**Response `200`** `PageResponse<ProductResponse>`
-
----
-
-#### `POST /api/brands` — 브랜드 등록
-
-**Request Body** `CreateBrandRequest`
-
-**Response `201`** `BrandResponse`
-
----
-
-#### `PUT /api/brands/{id}` — 브랜드 수정
-
-**Request Body** `UpdateBrandRequest`
-
-**Response `200`** `BrandResponse`
-
----
-
-#### `DELETE /api/brands/{id}` — 브랜드 삭제
-
-**Response `204`**
-
----
-
-### Categories
-
-#### `GET /api/categories` — 카테고리 목록
-
-**Response `200`** `List<CategoryResponse>`
-
----
-
-### Cart
-
-모든 장바구니 엔드포인트는 인증이 필요합니다 (`🔒`).
-
-#### `GET /api/carts` — 장바구니 조회 `🔒`
-
-| 파라미터 | 기본값 |
-|----------|--------|
-| `page` | `0` |
-| `size` | `10` |
-
-**Response `200`**
-```json
-{
-  "content": [
-    {
-      "product": { /* ProductResponse */ },
-      "quantity": 2,
-      "createdAt": "2024-01-01 12:00:00",
-      "updatedAt": "2024-01-02 09:30:00"
-    }
-  ],
-  "page": 0,
-  "size": 10,
-  "totalElements": 3,
-  "totalPages": 1,
-  "hasNext": false,
-  "hasPrevious": false
-}
-```
-
----
-
-#### `POST /api/carts` — 장바구니 담기 `🔒`
-
-**Request Body**
-```json
-{ "productId": 1, "quantity": 2 }
-```
-
-**Response `201`** `CartItemResponse`
-
----
-
-#### `PATCH /api/carts/{id}` — 수량 변경 `🔒`
-
-**Request Body**
-```json
-{ "quantity": 3 }
-```
-
-**Response `200`** `CartItemResponse`
-
----
-
-#### `DELETE /api/carts/{id}` — 개별 항목 삭제 `🔒`
-
-**Response `204`**
-
----
-
-#### `DELETE /api/carts` — 장바구니 전체 비우기 `🔒`
-
-**Response `204`**
-
----
-
-### Orders
-
-#### `GET /api/orders` — 내 주문 목록 `🔒`
-
-**Response `200`** `List<OrderResponse>`
-
----
-
-#### `GET /api/orders/{orderId}/items` — 주문 상세
-
-**Response `200`** `List<OrderItemResponse>`
-
----
-
-#### `POST /api/orders` — 주문 생성 `🔒`
-
-**Request Body** `OrderCreateRequest`
-
-**Response `201`** `OrderResponse`
-
----
-
-### Reviews
-
-#### `GET /api/reviews` — 전체 리뷰
-
-| 파라미터 | 기본값 |
-|----------|--------|
-| `page` | `0` |
-| `size` | `10` |
-
-**Response `200`** `PageResponse<ReviewResponse>`
-
----
-
-#### `GET /api/reviews/{id}` — 리뷰 상세
-
-**Response `200`** `ReviewResponse`
-
----
-
-#### `POST /api/reviews` — 리뷰 작성 `🔒`
-
-**Request Body**
-```json
-{ "productId": 1, "rating": 5, "title": "최고에요", "content": "퀄리티 좋습니다" }
-```
-
-**Response `201`** `ReviewResponse`
-
----
-
-#### `PUT /api/reviews/{id}` — 리뷰 수정 `🔒`
-
-**Request Body** `UpdateReviewRequest`
-
-**Response `200`** `ReviewResponse`
-
-> 작성자 본인이 아닐 경우 `403 Forbidden`
-
----
-
-#### `DELETE /api/reviews/{id}` — 리뷰 삭제 (soft delete) `🔒`
-
-**Response `204`**
-
-> 작성자 본인이 아닐 경우 `403 Forbidden`
-
----
-
-### Likes (위시리스트)
-
-#### `GET /api/likes` — 내 좋아요 목록 `🔒`
-
-**Response `200`** `List<UserLikeResponse>`
-
----
-
-#### `GET /api/likes/products/{productId}` — 상품별 좋아요
-
-**Response `200`** `List<UserLikeResponse>`
-
----
-
-#### `POST /api/likes` — 좋아요 추가 `🔒`
-
-**Request Body**
-```json
-{ "productId": 1 }
-```
-
-**Response `201`** `UserLikeResponse`
-
----
-
-#### `DELETE /api/likes?productId={productId}` — 좋아요 취소 `🔒`
-
-**Response `204`**
-
----
-
-### Error Responses
-
-| HTTP | 상황 |
-|------|------|
-| `400` | 잘못된 요청 (유효성 검사 실패) |
-| `401` | 인증 필요 또는 토큰 만료 |
-| `404` | 리소스 없음 |
-| `409` | 중복 리소스 (이메일 중복 등) |
-| `500` | 서버 내부 오류 |
-
-**Error Body**
-```json
-{ "code": "UNAUTHORIZED", "message": "인증이 필요합니다." }
-```
-
----
-
-## Environment Variables
-
-| 변수 | 설명 | 예시 |
-|------|------|------|
-| `DATABASE_URL` | PostgreSQL JDBC URL | `jdbc:postgresql://host:5432/fitory` |
-| `DATABASE_USERNAME` | DB 사용자명 | `postgres` |
-| `DATABASE_PASSWORD` | DB 비밀번호 | `yourpassword` |
-| `JWT_SECRET_KEY` | JWT 서명 키 (Base64, 32바이트 이상) | `c2VjcmV0...` |
-| `CORS` | 허용할 프론트엔드 Origin | `http://localhost:3000` |
-
----
-
-## Build & Run
-
-### 요구사항
-
-- Java 21+
-- PostgreSQL 15+
-
-### 빌드
+## Build
 
 ```bash
 ./gradlew shadowJar
 ```
 
-`build/libs/fitory.jar` 가 생성됩니다.
+---
 
-### 로컬 실행
+## Run
 
 ```bash
 export DATABASE_URL=jdbc:postgresql://localhost:5432/fitory
 export DATABASE_USERNAME=postgres
 export DATABASE_PASSWORD=yourpassword
-export JWT_SECRET_KEY=your-base64-encoded-secret-key
+export JWT_SECRET_KEY=your-base64-secret
 export CORS=http://localhost:3000
 
 java -jar build/libs/fitory.jar
 ```
 
-서버가 `http://localhost:8080` 에서 시작됩니다.
+---
 
-### Docker
+## Docker
 
 ```bash
 docker build -t fitory-backend:latest .
 
 docker run -p 8080:8080 \
-  -e DATABASE_URL=jdbc:postgresql://db:5432/fitory \
-  -e DATABASE_USERNAME=postgres \
-  -e DATABASE_PASSWORD=yourpassword \
-  -e JWT_SECRET_KEY=your-base64-encoded-secret-key \
-  -e CORS=http://localhost:3000 \
-  fitory-backend:latest
+    -e DATABASE_URL=jdbc:postgresql://db:5432/fitory \
+    -e DATABASE_USERNAME=postgres \
+    -e DATABASE_PASSWORD=yourpassword \
+    -e JWT_SECRET_KEY=your-base64-secret \
+    -e CORS=http://localhost:3000 \
+
+fitory-backend:latest
 ```
+
+<div align="right">
+
+[🔝 Back to Top](#top)
+
+</div>
 
 ---
 
-## Database
-
-PostgreSQL을 사용하며, `pg_trgm` 확장을 활성화해야 상품명 키워드 검색이 동작합니다.
+# 🗃 Database
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 ```
 
-인덱스 마이그레이션은 `src/main/resources/migration/V1__add_indexes.sql` 를 참고하세요.
-
-### 주요 테이블
-
-| 테이블 | 설명 |
-|--------|------|
+| Table | Description |
+|---|---|
 | `users` | 회원 계정 |
-| `brands` | 브랜드 |
-| `categories` | 카테고리 (slug 기반) |
-| `products` | 상품 카탈로그 (soft delete) |
-| `cart_items` | 장바구니 |
-| `orders` / `order_items` | 주문 |
-| `reviews` | 리뷰 (soft delete) |
+| `products` | 상품 |
+| `orders` | 주문 |
+| `reviews` | 리뷰 |
 | `users_likes` | 좋아요 |
-| `new_arrivals` / `ranked_products` | 큐레이션 |
+
+<div align="right">
+
+[🔝 Back to Top](#top)
+
+</div>
 
 ---
 
-## CI / CD
+# 🔄 CI / CD
 
-| 이벤트 | 동작 |
-|--------|------|
-| `v*` 태그 푸시 | Render 배포 웹훅 호출 (`RENDER_DEPLOY_URL` secret) |
+| Event | Action |
+|---|---|
+| `v*` Tag Push | Render Deploy Trigger |
 
 ```bash
-# 배포 예시
 git tag v1.0.0
 git push origin v1.0.0
 ```
 
----
+<div align="center">
 
-## Xpring Framework
+<br><br>
 
-`xpring/` 서브모듈은 Spring 없이 직접 구현한 경량 MVC 프레임워크입니다.
+# 🚀 FITORY BACKEND
 
-| 기능 | 클래스 |
-|------|--------|
-| IoC 컨테이너 | `BeanFactory`, `ComponentScanner` |
-| 라우팅 | `HandlerMapping` (정규식 기반, 숫자형 경로변수 `\d+` 컴파일) |
-| 인자 주입 | `HandlerAdapter` (PathVariable, RequestBody, RequestParam, CurrentUser) |
-| 전역 예외 처리 | `ExceptionHandlerResolver` (@ControllerAdvice) |
-| 보안 컨텍스트 | `SecurityContextHolder` (ThreadLocal) |
-| 로깅 | `XpringLoggerFactory` (SLF4J 래퍼) |
+### Custom MVC Framework · Stateless Authentication · High Performance SQL Architecture
+
+<br>
+
+[🔝 Back to Top](#top)
+
+<img src="https://capsule-render.vercel.app/api?type=waving&height=120&color=0:0f172a,100:1e293b&section=footer"/>
+
+</div>

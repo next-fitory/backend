@@ -31,6 +31,16 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public PageResponse<ProductResponse> findAllByCategoryId(Long categoryId, int page, int size) {
+        List<ProductResponse> content = productRepository.findAllByCategoryId(categoryId, page, size)
+                .stream()
+                .map(ProductResponse::of)
+                .toList();
+        long total = productRepository.countByCategoryId(categoryId);
+        return PageResponse.of(content, page, size, total);
+    }
+
+    @Override
     public PageResponse<ProductResponse> search(ProductSearchRequest request, int page, int size) {
         List<ProductResponse> content = productRepository.search(request, page, size);
         long total = productRepository.countSearch(request);
@@ -54,16 +64,15 @@ public class ProductServiceImpl implements ProductService {
         if (request.name() == null || request.name().isBlank()) {
             throw new IllegalArgumentException("Product name must not be blank");
         }
-        
-        return ProductResponse.of(productRepository.save(Product.create(request)));
+
+        Product saved = productRepository.save(Product.create(request));
+        return findById(saved.getId());
     }
 
     @Override
     public ProductResponse update(Long id, UpdateProductRequest request) {
-        Product existing = findDomain(id);
-        Product updated = existing.update(request);
-
-        return ProductResponse.of(productRepository.save(updated));
+        productRepository.save(findDomain(id).update(request));
+        return findById(id);
     }
 
     @Override

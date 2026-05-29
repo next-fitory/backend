@@ -13,6 +13,8 @@ public class OrderItem {
     private Long id;
     private Long orderId;
     private Long productId;
+    private String productName;
+    private String imageUrl;
     private int quantity;
     private BigDecimal unitPrice;
     private LocalDateTime createdAt;

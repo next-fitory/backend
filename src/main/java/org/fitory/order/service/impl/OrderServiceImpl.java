@@ -2,10 +2,12 @@ package org.fitory.order.service.impl;
 
 import core.annotation.Service;
 import lombok.RequiredArgsConstructor;
+import org.fitory.common.dto.PageResponse;
 import org.fitory.order.domain.Order;
 import org.fitory.order.domain.OrderItem;
 import org.fitory.order.domain.OrderStatus;
 import org.fitory.order.dto.OrderCreateRequest;
+import org.fitory.order.dto.OrderResponse;
 import org.fitory.order.repository.OrderItemRepository;
 import org.fitory.order.repository.OrderRepository;
 import org.fitory.order.service.OrderService;
@@ -22,8 +24,17 @@ public class OrderServiceImpl implements OrderService {
     private final OrderItemRepository orderItemRepository;
 
     @Override
-    public List<Order> getMyOrders(Long userId) {
-        return orderRepository.findAllByUserId(userId);
+    public PageResponse<OrderResponse> getMyOrders(Long userId, int page, int size) {
+        int offset = page * size;
+
+        List<Order> orders = orderRepository.findAllByUserId(userId, size, offset);
+        long totalElements = orderRepository.countByUserId(userId);
+
+        List<OrderResponse> content = orders.stream()
+                .map(OrderResponse::from)
+                .collect(Collectors.toList());
+
+        return PageResponse.of(content, page, size, totalElements);
     }
 
     @Override

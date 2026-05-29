@@ -9,6 +9,8 @@ public record OrderItemResponse(
         Long id,
         Long orderId,
         Long productId,
+        String productName,
+        String imageUrl,
         int quantity,
         BigDecimal unitPrice,
         LocalDateTime createdAt
@@ -18,6 +20,8 @@ public record OrderItemResponse(
                 item.getId(),
                 item.getOrderId(),
                 item.getProductId(),
+                item.getProductName(),
+                item.getImageUrl(),
                 item.getQuantity(),
                 item.getUnitPrice(),
                 item.getCreatedAt()
