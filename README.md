@@ -288,18 +288,190 @@ USING gin(name gin_trgm_ops);
 
 ---
 
-## ⚙️ Custom MVC Framework
+## ⚙️ IoC Container & 생성자 주입 (위상정렬 기반)
 
 담당: **박유빈 (Framework & Core)**
 
-Spring 없이 순수 Java 기반 MVC Framework를 직접 구현했습니다.
+Spring의 `@Autowired` 없이 순수 리플렉션으로 DI 컨테이너를 구현했습니다.
+빈 인스턴스화 순서를 보장하기 위해 의존 그래프를 구축하고 위상정렬(Kahn's Algorithm)로 생성 순서를 결정합니다.
 
-| Component | Description |
-|---|---|
-| `DispatcherServlet` | Front Controller |
-| `HandlerMapping` | Regex Routing |
-| `HandlerAdapter` | Argument Resolver |
-| `BeanFactory` | IoC Container |
+### 동작 흐름
+
+```mermaid
+flowchart LR
+    Scanner["ComponentScanner\n@Component 계열 클래스 탐색\n(file / jar 모두 지원)"]
+    Defs["BeanDefinition\n생성자 파라미터 타입 분석"]
+    Graph["BeanGraph\n의존 방향 간선 구축\n(in-degree 추적)"]
+    Topo["위상정렬\nKahn's Algorithm\n순환 참조 감지"]
+    Context["ApplicationContext\n정렬 순서대로\nreflection 인스턴스화"]
+
+    Scanner --> Defs --> Graph --> Topo --> Context
+```
+
+### 핵심 포인트
+
+**① 컴포넌트 스캔** — `@Component`를 메타 어노테이션으로 가진 `@Service`, `@Repository`, `@RestController`도 같이 탐지합니다.
+
+```java
+// 메타 어노테이션 체인 탐색
+for (Annotation ann : cls.getAnnotations()) {
+    if (ann.annotationType().isAnnotationPresent(Component.class)) return true;
+}
+```
+
+**② 위상정렬로 인스턴스화 순서 결정** — 의존 대상 빈이 먼저 생성되어야 하므로, `BeanGraph`가 생성자 파라미터 타입을 분석해 간선을 구축하고 Kahn's Algorithm으로 정렬합니다. 정렬 후 빈 개수가 노드 수와 다르면 순환 의존성으로 판단해 예외를 던집니다.
+
+```java
+// BeanGraph — in-degree 0인 빈부터 큐에 투입
+Deque<String> queue = new ArrayDeque<>(zeros);
+while (!queue.isEmpty()) {
+    String cur = queue.poll();
+    ordered.add(nodeMap.get(cur));
+    for (String next : dependents) {
+        if (indegree.merge(next, -1, Integer::sum) == 0) queue.add(next);
+    }
+}
+if (ordered.size() != nodeMap.size()) throw new CircularDependencyException(...);
+```
+
+**③ List\<T\> 주입 지원** — 생성자 파라미터가 `List<T>` 형태이면 `getParameterizedType()`으로 원소 타입을 추출해 해당 타입의 모든 빈을 주입합니다. `HandlerAdapter`의 `List<ArgumentResolver>` 주입이 이 방식으로 동작합니다.
+
+---
+
+## 🌐 내장 Tomcat 요청 처리 파이프라인
+
+담당: **박유빈 (Framework & Core)**
+
+`EmbeddedTomcatServer`가 Tomcat을 직접 초기화하고, Filter 체인과 `DispatcherServlet`을 프로그래밍 방식으로 등록합니다.
+Front Controller 패턴으로 모든 요청이 `DispatcherServlet` 하나를 통과합니다.
+
+### 요청 처리 흐름
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant CF as CorsFilter
+    participant SF as JwtSecurityFilter
+    participant DS as DispatcherServlet
+    participant HM as HandlerMapping
+    participant HA as HandlerAdapter
+    participant AR as ArgumentResolvers
+    participant CT as Controller
+
+    C->>CF: HTTP Request
+    CF->>SF: doFilter()
+    SF->>SF: authenticate() → SecurityContextHolder.set()
+    SF->>DS: doFilter() → service()
+    DS->>HM: getHandler(req)
+    Note over HM: Regex 매칭 + best-match 선택<br/>정적 경로는 ConcurrentHashMap 캐시
+    HM-->>DS: HandlerExecution
+    DS->>HA: handle(req, resp, execution)
+    HA->>AR: 파라미터별 resolve()
+    Note over AR: @PathVariable / @RequestParam<br/>@RequestBody / @CurrentUser
+    AR-->>HA: Object[] args
+    HA->>CT: method.invoke(controller, args)
+    CT-->>HA: ResponseEntity
+    HA-->>C: JSON Response
+    SF->>SF: finally: SecurityContextHolder.clear()
+```
+
+### 핵심 포인트
+
+**① Filter 등록** — IoC 컨테이너에서 `Filter` 타입 빈을 수집해 Tomcat Context에 순서대로 등록합니다. 필터 추가 시 코드 수정 없이 `@Component`만 붙이면 됩니다.
+
+```java
+// XpringApplication — Filter 빈 자동 수집 후 서버에 주입
+List<Filter> filters = context.getBeansOfType(Filter.class);
+new EmbeddedTomcatServer(dispatcherServlet, filters).start(port);
+```
+
+**② HandlerAdapter — ArgumentResolver 체인** — 컨트롤러 메서드의 각 파라미터를 `supports()` 조건에 맞는 `ArgumentResolver`가 담당합니다. 새 파라미터 타입은 `ArgumentResolver` 구현체 하나만 추가하면 됩니다.
+
+```java
+// 파라미터마다 지원하는 리졸버를 찾아 순서대로 resolve
+ArgumentResolver resolver = argumentResolvers.stream()
+    .filter(r -> r.supports(param))
+    .findFirst()
+    .orElseThrow(...);
+args[i] = resolver.resolve(param, req, resp, pathVars);
+```
+
+---
+
+## 🔒 ThreadLocal 기반 인증 컨텍스트 전파
+
+담당: **박유빈 (Framework & Core)**
+
+Tomcat은 요청마다 스레드 풀의 스레드를 재사용합니다. `ThreadLocal`을 활용해 인증 정보를 현재 스레드에만 격리 저장하고, 요청이 끝나면 반드시 제거해 컨텍스트 누출을 방지합니다.
+
+### 동작 흐름
+
+```mermaid
+sequenceDiagram
+    participant SF as JwtSecurityFilter
+    participant SCH as SecurityContextHolder
+    participant TL as ThreadLocal
+    participant AAR as AuthenticationArgumentResolver
+    participant CT as Controller
+
+    SF->>SF: JWT 검증 → User 조회
+    SF->>SCH: setAuthentication(jwtAuthentication)
+    SCH->>TL: holder.set(context)
+    Note over TL: 이 스레드에만 격리 저장
+    SF-->>CT: chain.doFilter() (요청 처리)
+    CT->>AAR: @CurrentUser 파라미터 resolve
+    AAR->>SCH: getAuthentication()
+    SCH->>TL: holder.get()
+    TL-->>AAR: Authentication
+    AAR-->>CT: principal (User 객체)
+    SF->>SCH: finally: clearContext()
+    SCH->>TL: holder.remove()
+    Note over TL: 스레드 반환 전 반드시 제거
+```
+
+### 핵심 포인트
+
+**① SecurityFilter 추상 클래스** — `doFilter()` 안에서 `authenticate()` 호출 → 저장 → `chain.doFilter()` → `finally` 정리를 강제합니다. 구현체(`JwtSecurityFilter`)는 `authenticate()`만 오버라이드하면 됩니다.
+
+```java
+// SecurityFilter — try/finally로 정리 보장
+try {
+    Authentication auth = authenticate(req, resp);
+    SecurityContextHolder.setAuthentication(auth);
+    chain.doFilter(request, response);
+} finally {
+    SecurityContextHolder.clearContext(); // 스레드 풀 재사용으로 인한 컨텍스트 누출 방지
+}
+```
+
+**② 만료 토큰 구분** — 유효하지 않은 토큰과 만료된 토큰을 다르게 처리합니다. 만료 시 request attribute에 플래그를 세팅하고, `AuthenticationArgumentResolver`에서 이를 확인해 `TokenExpiredException`을 던집니다.
+
+```java
+// JwtSecurityFilter
+if (jwtProvider.isExpired(token)) {
+    request.setAttribute("TOKEN_EXPIRED", true); // 만료 플래그
+    return null;
+}
+
+// AuthenticationArgumentResolver
+if (Boolean.TRUE.equals(request.getAttribute("TOKEN_EXPIRED"))) {
+    throw new TokenExpiredException(); // 401 + 만료 에러코드
+}
+throw new UnauthorizedException(); // 401 + 미인증 에러코드
+```
+
+**③ `@CurrentUser` ArgumentResolver** — 컨트롤러에서 `SecurityContextHolder`를 직접 참조하지 않고 `@CurrentUser` 어노테이션으로 인증된 사용자 객체를 주입받습니다. MVC 레이어와 보안 레이어의 결합도를 낮춥니다.
+
+```java
+// Controller
+public ResponseEntity<?> getMe(@CurrentUser User user) { ... }
+
+// AuthenticationArgumentResolver
+public Object resolve(Parameter parameter, ...) {
+    Authentication auth = SecurityContextHolder.getAuthentication();
+    return auth.getPrincipal(); // User 객체 반환
+}
+```
 
 <div align="right">
 
@@ -489,13 +661,107 @@ Repository Layer 내부에서 데이터 변환 로직을 캡슐화하여 해결�
 
 ---
 
-## 🚨 Framework 내부 구조 개선
+## 🚨 정적 경로와 동적 경로 간 라우팅 충돌 해결
 
 담당: **박유빈 (Framework & Core)**
 
-- DispatcherServlet 구조 개선 예정
-- Regex Routing 최적화 예정
-- IoC Container 개선 예정
+### 문제 상황
+
+`/products/ranks`와 `/products/{id}` 두 핸들러가 공존할 때, 커스텀 프레임워크는 먼저 등록된 핸들러를 반환하는 first-match 방식이었습니다.
+`{id}`의 Regex가 `[^/]+`이기 때문에 `ranks`라는 문자열도 매칭되어 `/products/ranks` 요청이 `/products/{id}` 핸들러로 흡수되는 충돌이 발생했습니다.
+또한 가변 URI(`/products/123`, `/products/456` …)를 모두 캐시 키로 저장하다 보니 캐시가 무한히 증가하는 메모리 문제도 함께 발견됐습니다.
+
+### 해결 방식
+
+세 단계로 나눠서 해결했습니다.
+
+**① 핸들러 등록 시 사전 정렬**
+
+path variable이 적을수록(= 정적 세그먼트가 많을수록) 구체적인 경로입니다.
+같은 variable 개수면 경로 길이가 긴 쪽을 우선시합니다.
+
+```java
+handlers.sort(Comparator
+    .comparingInt((HandlerMethod h) -> h.getPathVariableNames().size())
+    .thenComparingInt(h -> -h.getPathTemplate().length()));
+```
+
+**② first-match → best-match 교체**
+
+정렬만으로는 안전하지 않아서, 매칭 루프에서 path variable 개수가 가장 적은 핸들러를 최종 선택하도록 변경했습니다.
+
+```java
+HandlerExecution bestMatch = null;
+int bestVarCount = Integer.MAX_VALUE;
+
+for (HandlerMethod handler : handlers) {
+    if (handler.getHttpMethod() != httpMethod) continue;
+    List<String> names = handler.getPathVariableNames();
+    if (names.size() >= bestVarCount) continue; // 더 나은 후보만 검사
+    Matcher m = handler.getUriPattern().matcher(uri);
+    if (m.matches()) {
+        bestMatch = new HandlerExecution(handler, pathVars);
+        bestVarCount = names.size();
+        if (bestVarCount == 0) break; // 정적 경로면 즉시 확정
+    }
+}
+```
+
+**③ path variable 타입 기반 Regex 세분화**
+
+`Long`/`Integer` 파라미터는 `\d+`, 나머지는 `[^/]+`으로 컴파일해 숫자 ID 경로와 문자열 경로가 서로 매칭되지 않도록 했습니다.
+
+```java
+// {id: Long}  →  (\d+)
+// {slug: String}  →  ([^/]+)
+regex.append(isNumericParam(varName, params) ? "(\\d+)" : "([^/]+)");
+```
+
+**④ 캐시 키를 정적 경로로 한정**
+
+가변 URI는 캐싱하지 않고 path variable이 없는 경로만 캐싱하여 메모리 문제를 해결했습니다.
+
+```java
+if (bestMatch.handler().getPathVariableNames().isEmpty()) {
+    routeCache.put(cacheKey, bestMatch);
+}
+```
+
+### 결과
+
+- 정적 경로(`/products/ranks`)가 동적 경로(`/products/{id}`)보다 항상 우선 매칭
+- 라우팅 정확성과 캐시 안전성 동시 확보
+- Spring의 `RequestMappingHandlerMapping` 우선순위 로직을 직접 구현하며 내부 동작 이해
+
+---
+
+## 🚨 `@RequestBody` Generic 타입 역직렬화 실패 해결
+
+담당: **박유빈 (Framework & Core)**
+
+### 문제 상황
+
+`List<CartItemRequest>` 타입의 `@RequestBody` 파라미터를 역직렬화하면 `List<LinkedHashMap>`이 반환되는 문제가 발생했습니다.
+Java의 타입 소거(Type Erasure)로 인해 런타임에는 제네릭 정보가 사라지기 때문에, `parameter.getType()`은 원소 타입을 알 수 없는 `List.class`만 반환합니다.
+Jackson은 원소 타입 없이 `List.class`만 받으면 각 원소를 기본 타입인 `LinkedHashMap`으로 역직렬화합니다.
+
+### 해결 방식
+
+`parameter.getParameterizedType()`으로 제네릭 타입 정보를 보존한 뒤, Jackson의 `constructType()`을 통해 `JavaType`을 생성해 역직렬화했습니다.
+
+```java
+// Before: parameter.getType() → List.class (제네릭 정보 소실)
+// objectMapper.readValue(stream, List.class) → List<LinkedHashMap>
+
+// After: getParameterizedType() → List<CartItemRequest> 타입 정보 보존
+JavaType javaType = objectMapper.constructType(parameter.getParameterizedType());
+return objectMapper.readValue(request.getInputStream(), javaType);
+```
+
+### 결과
+
+- `List<T>`, `Optional<T>` 등 파라미터화된 모든 타입에서 역직렬화 정상 동작
+- Java 리플렉션 API에서 `getType()`과 `getParameterizedType()`의 차이를 직접 확인
 
 ---
 
