@@ -1,6 +1,6 @@
 package org.fitory.category.service.impl;
 
-import core.annotation.Service;
+import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import org.fitory.category.dto.CategoryResponse;
 import org.fitory.category.repository.CategoryRepository;

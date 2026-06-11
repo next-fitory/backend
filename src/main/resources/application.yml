@@ -1,3 +1,8 @@
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
 database:
   driverClassName: org.postgresql.Driver
   url: ${DATABASE_URL}
@@ -5,4 +10,4 @@ database:
   password: ${DATABASE_PASSWORD}
 
 jwtSecretKey: ${JWT_SECRET_KEY}
-cors: ${CORS}
+cors: ${CORS:http://localhost:3000}

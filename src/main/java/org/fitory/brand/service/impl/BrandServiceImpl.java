@@ -1,6 +1,6 @@
 package org.fitory.brand.service.impl;
 
-import core.annotation.Service;
+import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import org.fitory.brand.domain.Brand;
 import org.fitory.brand.dto.BrandResponse;

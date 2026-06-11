@@ -1,6 +1,6 @@
 package org.fitory.auth.repository;
 
-import core.annotation.Repository;
+import org.springframework.stereotype.Repository;
 import org.fitory.auth.domain.Role;
 import org.fitory.auth.domain.User;
 import org.fitory.infra.DatabaseConfig;

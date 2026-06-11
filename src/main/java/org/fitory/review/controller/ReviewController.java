@@ -1,17 +1,16 @@
 package org.fitory.review.controller;
 
-import core.annotation.RestController;
 import lombok.RequiredArgsConstructor;
-import mvc.ResponseEntity;
-import mvc.annotation.*;
 import org.fitory.auth.domain.User;
 import org.fitory.common.dto.PageResponse;
 import org.fitory.review.dto.CreateReviewRequest;
 import org.fitory.review.dto.ReviewResponse;
 import org.fitory.review.dto.UpdateReviewRequest;
 import org.fitory.review.service.ReviewService;
-import security.Authentication;
-import security.annotation.CurrentUser;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/reviews")
@@ -36,26 +35,26 @@ public class ReviewController {
     @PostMapping
     public ResponseEntity<ReviewResponse> create(
             @RequestBody CreateReviewRequest request,
-            @CurrentUser Authentication auth) {
-        Long userId = ((User) auth.getPrincipal()).getId();
-        return ResponseEntity.created(reviewService.create(userId, request));
+            @AuthenticationPrincipal User user) {
+        Long userId = user.getId();
+        return ResponseEntity.status(HttpStatus.CREATED).body(reviewService.create(userId, request));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ReviewResponse> update(
             @PathVariable Long id,
             @RequestBody UpdateReviewRequest request,
-            @CurrentUser Authentication auth) {
-        Long userId = ((User) auth.getPrincipal()).getId();
+            @AuthenticationPrincipal User user) {
+        Long userId = user.getId();
         return ResponseEntity.ok(reviewService.update(id, userId, request));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @PathVariable Long id,
-            @CurrentUser Authentication auth) {
-        Long userId = ((User) auth.getPrincipal()).getId();
+            @AuthenticationPrincipal User user) {
+        Long userId = user.getId();
         reviewService.delete(id, userId);
-        return ResponseEntity.noContent();
+        return ResponseEntity.noContent().build();
     }
 }

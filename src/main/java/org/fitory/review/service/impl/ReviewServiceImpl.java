@@ -1,6 +1,6 @@
 package org.fitory.review.service.impl;
 
-import core.annotation.Service;
+import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import org.fitory.auth.service.AuthService;
 import org.fitory.common.dto.PageResponse;

@@ -1,17 +1,13 @@
 package org.fitory.category.controller;
 
-import core.annotation.RestController;
 import lombok.RequiredArgsConstructor;
-import mvc.ResponseEntity;
-import mvc.annotation.GetMapping;
-import mvc.annotation.PathVariable;
-import mvc.annotation.RequestMapping;
-import mvc.annotation.RequestParam;
 import org.fitory.category.dto.CategoryResponse;
 import org.fitory.category.service.CategoryService;
 import org.fitory.common.dto.PageResponse;
 import org.fitory.product.dto.ProductResponse;
 import org.fitory.product.service.ProductService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 

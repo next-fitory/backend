@@ -1,6 +1,7 @@
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'org.springframework.boot' version '3.3.6'
+    id 'io.spring.dependency-management' version '1.1.6'
 }
 
 group = 'org.fitory'
@@ -20,45 +21,28 @@ repositories {
 }
 
 dependencies {
-    implementation project(':xpring')
-    implementation 'tools.jackson.core:jackson-databind:3.1.2'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
     compileOnly 'org.projectlombok:lombok:1.18.32'
     annotationProcessor 'org.projectlombok:lombok:1.18.32'
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
 
     implementation 'org.mindrot:jbcrypt:0.4'
 
-    // JWT 토큰을 다루기 위한 필수 라이브러리들 (jjwt)
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5' // JSON 파싱용
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-    compileOnly 'jakarta.servlet:jakarta.servlet-api:6.0.0'
+    implementation 'org.postgresql:postgresql:42.7.11'
+    implementation 'com.zaxxer:HikariCP:7.0.2'
+    implementation 'org.jooq:jooq:3.20.15'
 
-    // Source: https://mvnrepository.com/artifact/org.postgresql/postgresql
-    implementation("org.postgresql:postgresql:42.7.11")
-
-    // Source: https://mvnrepository.com/artifact/com.zaxxer/HikariCP
-    implementation("com.zaxxer:HikariCP:7.0.2")
-
-    // Source: https://mvnrepository.com/artifact/org.jooq/jooq
-    implementation("org.jooq:jooq:3.20.15")
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
 }
 
 test {
     useJUnitPlatform()
-}
-
-jar {
-    manifest {
-        attributes 'Main-Class': 'org.fitory.Application'
-    }
-}
-
-shadowJar {
-    archiveBaseName = 'fitory'
-    archiveClassifier = ''
-    archiveVersion = ''
-    mergeServiceFiles()
 }

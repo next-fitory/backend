@@ -1,6 +1,6 @@
 package org.fitory.auth.service.impl;
 
-import core.annotation.Service;
+import org.springframework.stereotype.Service;
 import org.fitory.auth.service.NicknameGenerator;
 
 import java.util.List;

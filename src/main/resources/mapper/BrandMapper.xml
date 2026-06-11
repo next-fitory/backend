@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.fitory.brand.repository.impl.mapper.BrandMapper">
+
+    <resultMap id="brandResultMap" type="org.fitory.brand.domain.Brand">
+        <constructor>
+            <idArg column="id"         javaType="Long"/>
+            <arg   column="name"       javaType="String"/>
+            <arg   column="image_url"  javaType="String"/>
+            <arg   column="created_at" javaType="java.time.LocalDateTime"/>
+            <arg   column="updated_at" javaType="java.time.LocalDateTime"/>
+            <arg   column="deleted"    javaType="boolean"/>
+        </constructor>
+    </resultMap>
+
+    <!-- INSERT ... RETURNING * : PostgreSQL RETURNING으로 생성된 레코드 전체 반환 -->
+    <select id="insert" resultMap="brandResultMap">
+        INSERT INTO brands (name, image_url, created_at, updated_at, deleted)
+        VALUES (#{name}, #{imageUrl}, #{createdAt}, #{updatedAt}, #{deleted})
+        RETURNING *
+    </select>
+
+    <select id="update" resultMap="brandResultMap">
+        UPDATE brands
+        SET name       = #{name},
+            image_url  = #{imageUrl},
+            updated_at = #{updatedAt}
+        WHERE id = #{id}
+        RETURNING *
+    </select>
+
+    <select id="findById" resultMap="brandResultMap">
+        SELECT * FROM brands
+        WHERE id = #{id}
+          AND deleted = false
+    </select>
+
+    <select id="findAll" resultMap="brandResultMap">
+        SELECT * FROM brands
+        WHERE deleted = false
+    </select>
+
+    <select id="findByName" resultMap="brandResultMap">
+        SELECT * FROM brands
+        WHERE name = #{name}
+          AND deleted = false
+    </select>
+
+    <update id="softDeleteById">
+        UPDATE brands
+        SET deleted    = true,
+            updated_at = #{updatedAt}
+        WHERE id = #{id}
+          AND deleted = false
+    </update>
+
+</mapper>

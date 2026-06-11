@@ -1,6 +1,6 @@
 package org.fitory.review.repository.impl;
 
-import core.annotation.Repository;
+import org.springframework.stereotype.Repository;
 import org.fitory.infra.DatabaseConfig;
 import org.fitory.review.domain.Review;
 import org.fitory.review.repository.ReviewRepository;

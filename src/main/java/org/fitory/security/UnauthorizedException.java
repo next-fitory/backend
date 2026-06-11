@@ -1,0 +1,7 @@
+package org.fitory.security;
+
+public class UnauthorizedException extends RuntimeException {
+    public UnauthorizedException(String message) {
+        super(message);
+    }
+}

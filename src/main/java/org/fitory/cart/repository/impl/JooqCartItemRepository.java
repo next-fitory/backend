@@ -1,6 +1,6 @@
 package org.fitory.cart.repository.impl;
 
-import core.annotation.Repository;
+import org.springframework.stereotype.Repository;
 import org.fitory.cart.domain.CartItem;
 import org.fitory.cart.dto.CartProductResponse;
 import org.fitory.cart.repository.CartItemRepository;

@@ -1,6 +1,6 @@
 package org.fitory.cart.service.impl;
 
-import core.annotation.Service;
+import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import org.fitory.cart.domain.CartItem;
 import org.fitory.cart.dto.AddCartItemRequest;

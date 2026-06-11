@@ -1,14 +1,14 @@
 package org.fitory.auth.controller;
 
-import core.annotation.RestController;
 import lombok.RequiredArgsConstructor;
-import mvc.ResponseEntity;
-import mvc.annotation.*;
 import org.fitory.auth.domain.User;
 import org.fitory.auth.dto.SignupRequest;
 import org.fitory.auth.service.AuthService;
 import org.fitory.user.dto.UserResponse;
-import security.annotation.CurrentUser;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
@@ -17,15 +17,13 @@ public class UserController {
 
     private final AuthService authService;
 
-    // POST /api/users (회원가입)
     @PostMapping
     public ResponseEntity<User> signup(@RequestBody SignupRequest request) {
-        return ResponseEntity.created(authService.signup(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.signup(request));
     }
 
-    // GET /api/users/me (내 정보 조회)
     @GetMapping("/me")
-    public ResponseEntity<UserResponse> getMyInfo(@CurrentUser User user) {
+    public ResponseEntity<UserResponse> getMyInfo(@AuthenticationPrincipal User user) {
         return ResponseEntity.ok(UserResponse.of(user));
     }
 }

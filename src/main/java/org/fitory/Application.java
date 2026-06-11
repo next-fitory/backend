@@ -1,11 +1,12 @@
 package org.fitory;
 
-import boot.XpringApplication;
-import boot.XpringBootApplication;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 
-@XpringBootApplication(port = 8080)
+@SpringBootApplication(exclude = {UserDetailsServiceAutoConfiguration.class})
 public class Application {
     public static void main(String[] args) {
-        XpringApplication.run(Application.class);
+        SpringApplication.run(Application.class, args);
     }
 }

@@ -1,6 +1,6 @@
 package org.fitory.product.repository.impl;
 
-import core.annotation.Repository;
+import org.springframework.stereotype.Repository;
 import org.fitory.infra.DatabaseConfig;
 import org.fitory.product.domain.Product;
 import org.fitory.product.dto.ProductResponse;

@@ -1,6 +1,6 @@
 package org.fitory.userlike.repository.impl;
 
-import core.annotation.Repository;
+import org.springframework.stereotype.Repository;
 import org.fitory.infra.DatabaseConfig;
 import org.fitory.userlike.domain.UserLike;
 import org.fitory.userlike.repository.UserLikeRepository;

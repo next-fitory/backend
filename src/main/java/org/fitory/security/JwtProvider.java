@@ -1,13 +1,13 @@
 package org.fitory.security;
 
-import core.ConfigurationAdapter;
-import core.annotation.Service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.fitory.auth.domain.User;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
@@ -15,9 +15,12 @@ import java.util.Date;
 @Service
 public class JwtProvider {
 
-    private static final String SECRET_KEY_STRING = System.getenv("JWT_SECRET_KEY") == null ? ConfigurationAdapter.getProperty("jwtSecretKey") : System.getenv("JWT_SECRET_KEY");
-    private static final Key SECRET_KEY = Keys.hmacShaKeyFor(SECRET_KEY_STRING.getBytes());
-    private static final long ACCESS_TOKEN_EXPIRATION = 1000L * 60 * 60 * 2; // 2시간
+    private final Key secretKey;
+    private static final long ACCESS_TOKEN_EXPIRATION = 1000L * 60 * 60 * 2;
+
+    public JwtProvider(@Value("${jwtSecretKey}") String jwtSecretKey) {
+        this.secretKey = Keys.hmacShaKeyFor(jwtSecretKey.getBytes());
+    }
 
     public String generateAccessToken(User user) {
         Date now = new Date();
@@ -29,13 +32,13 @@ public class JwtProvider {
                 .claim("role", user.getRole().name())
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
-                .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public Claims parseClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY)
+                .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
@@ -43,7 +46,7 @@ public class JwtProvider {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(SECRET_KEY).build().parseClaimsJws(token);
+            Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
             return true;
         } catch (Exception e) {
             return false;
@@ -52,7 +55,7 @@ public class JwtProvider {
 
     public boolean isExpired(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(SECRET_KEY).build().parseClaimsJws(token);
+            Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
             return false;
         } catch (ExpiredJwtException e) {
             return true;

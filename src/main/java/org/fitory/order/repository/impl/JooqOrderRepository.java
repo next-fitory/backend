@@ -1,6 +1,6 @@
 package org.fitory.order.repository.impl;
 
-import core.annotation.Repository;
+import org.springframework.stereotype.Repository;
 import org.fitory.infra.DatabaseConfig;
 import org.fitory.order.domain.Order;
 import org.fitory.order.domain.OrderStatus;

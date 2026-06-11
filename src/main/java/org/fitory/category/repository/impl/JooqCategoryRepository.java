@@ -1,6 +1,6 @@
 package org.fitory.category.repository.impl;
 
-import core.annotation.Repository;
+import org.springframework.stereotype.Repository;
 import org.fitory.category.domain.Category;
 import org.fitory.category.repository.CategoryRepository;
 import org.fitory.infra.DatabaseConfig;

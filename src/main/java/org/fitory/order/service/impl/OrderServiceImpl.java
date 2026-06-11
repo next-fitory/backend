@@ -1,6 +1,6 @@
 package org.fitory.order.service.impl;
 
-import core.annotation.Service;
+import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import org.fitory.common.dto.PageResponse;
 import org.fitory.order.domain.Order;

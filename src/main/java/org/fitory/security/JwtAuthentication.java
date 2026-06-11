@@ -1,29 +1,28 @@
 package org.fitory.security;
 
-import lombok.RequiredArgsConstructor;
 import org.fitory.auth.domain.User;
-import security.Authentication;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.util.Collection;
 import java.util.List;
 
-@RequiredArgsConstructor
-public class JwtAuthentication implements Authentication {
+public class JwtAuthentication extends AbstractAuthenticationToken {
 
     private final User principal;
 
+    public JwtAuthentication(User principal) {
+        super(List.of(new SimpleGrantedAuthority("ROLE_" + principal.getRole().name())));
+        this.principal = principal;
+        setAuthenticated(true);
+    }
+
     @Override
-    public Object getPrincipal() {
+    public Object getCredentials() {
+        return null;
+    }
+
+    @Override
+    public User getPrincipal() {
         return principal;
-    }
-
-    @Override
-    public Collection<String> getRoles() {
-        return List.of(principal.getRole().name());
-    }
-
-    @Override
-    public boolean isAuthenticated() {
-        return true;
     }
 }

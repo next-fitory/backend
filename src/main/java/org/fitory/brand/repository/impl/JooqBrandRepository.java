@@ -1,6 +1,5 @@
 package org.fitory.brand.repository.impl;
 
-import core.annotation.Repository;
 import org.fitory.brand.domain.Brand;
 import org.fitory.brand.repository.BrandRepository;
 import org.fitory.infra.DatabaseConfig;
@@ -14,7 +13,6 @@ import java.util.Optional;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.table;
 
-@Repository
 public class JooqBrandRepository implements BrandRepository {
     private static final String TABLE = "brands";
     private final DSLContext dsl;

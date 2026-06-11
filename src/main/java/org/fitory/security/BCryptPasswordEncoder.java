@@ -1,7 +1,7 @@
 package org.fitory.security;
 
-import core.annotation.Component;
 import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.stereotype.Component;
 
 @Component
 public class BCryptPasswordEncoder implements PasswordEncoder {

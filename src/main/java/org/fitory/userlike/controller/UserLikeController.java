@@ -1,15 +1,14 @@
 package org.fitory.userlike.controller;
 
-import core.annotation.RestController;
 import lombok.RequiredArgsConstructor;
-import mvc.ResponseEntity;
-import mvc.annotation.*;
 import org.fitory.auth.domain.User;
 import org.fitory.userlike.dto.CreateUserLikeRequest;
 import org.fitory.userlike.dto.UserLikeResponse;
 import org.fitory.userlike.service.UserLikeService;
-import security.Authentication;
-import security.annotation.CurrentUser;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,8 +19,8 @@ public class UserLikeController {
     private final UserLikeService userLikeService;
 
     @GetMapping
-    public ResponseEntity<List<UserLikeResponse>> getByUser(@CurrentUser Authentication auth) {
-        Long userId = ((User) auth.getPrincipal()).getId();
+    public ResponseEntity<List<UserLikeResponse>> getByUser(@AuthenticationPrincipal User user) {
+        Long userId = user.getId();
         return ResponseEntity.ok(userLikeService.findAllByUserId(userId));
     }
 
@@ -31,15 +30,15 @@ public class UserLikeController {
     }
 
     @PostMapping
-    public ResponseEntity<UserLikeResponse> like(@RequestBody CreateUserLikeRequest request, @CurrentUser Authentication auth) {
-        Long userId = ((User) auth.getPrincipal()).getId();
-        return ResponseEntity.created(userLikeService.like(new CreateUserLikeRequest(userId, request.productId())));
+    public ResponseEntity<UserLikeResponse> like(@RequestBody CreateUserLikeRequest request, @AuthenticationPrincipal User user) {
+        Long userId = user.getId();
+        return ResponseEntity.status(HttpStatus.CREATED).body(userLikeService.like(new CreateUserLikeRequest(userId, request.productId())));
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> unlike(@RequestParam(required = true) Long productId, @CurrentUser Authentication auth) {
-        Long userId = ((User) auth.getPrincipal()).getId();
+    public ResponseEntity<Void> unlike(@RequestParam Long productId, @AuthenticationPrincipal User user) {
+        Long userId = user.getId();
         userLikeService.unlike(userId, productId);
-        return ResponseEntity.noContent();
+        return ResponseEntity.noContent().build();
     }
 }

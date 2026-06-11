@@ -1,9 +1,6 @@
 package org.fitory.brand.controller;
 
-import core.annotation.RestController;
 import lombok.RequiredArgsConstructor;
-import mvc.ResponseEntity;
-import mvc.annotation.*;
 import org.fitory.brand.dto.BrandResponse;
 import org.fitory.brand.dto.CreateBrandRequest;
 import org.fitory.brand.dto.UpdateBrandRequest;
@@ -11,6 +8,9 @@ import org.fitory.brand.service.BrandService;
 import org.fitory.common.dto.PageResponse;
 import org.fitory.product.dto.ProductResponse;
 import org.fitory.product.service.ProductService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -43,7 +43,7 @@ public class BrandController {
 
     @PostMapping
     public ResponseEntity<BrandResponse> create(@RequestBody CreateBrandRequest request) {
-        return ResponseEntity.created(brandService.create(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(brandService.create(request));
     }
 
     @PutMapping("/{id}")
@@ -55,6 +55,6 @@ public class BrandController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         brandService.delete(id);
-        return ResponseEntity.noContent();
+        return ResponseEntity.noContent().build();
     }
 }

@@ -1,6 +1,6 @@
 package org.fitory.product.service.impl;
 
-import core.annotation.Service;
+import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import org.fitory.product.dto.ProductResponse;
 import org.fitory.product.repository.ProductCurationRepository;

@@ -1,6 +1,6 @@
 package org.fitory.auth.service.impl;
 
-import core.annotation.Service;
+import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import org.fitory.auth.domain.Role;
 import org.fitory.auth.domain.User;

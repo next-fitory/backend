@@ -1,15 +1,15 @@
 package org.fitory.product.controller;
 
-import core.annotation.RestController;
 import lombok.RequiredArgsConstructor;
-import mvc.ResponseEntity;
-import mvc.annotation.*;
 import org.fitory.common.dto.PageResponse;
 import org.fitory.product.dto.CreateProductRequest;
 import org.fitory.product.dto.ProductResponse;
 import org.fitory.product.dto.ProductSearchRequest;
 import org.fitory.product.dto.UpdateProductRequest;
 import org.fitory.product.service.ProductService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -45,7 +45,7 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<ProductResponse> create(@RequestBody CreateProductRequest request) {
-        return ResponseEntity.created(productService.create(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(productService.create(request));
     }
 
     @PutMapping("/{id}")
@@ -57,6 +57,6 @@ public class ProductController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         productService.delete(id);
-        return ResponseEntity.noContent();
+        return ResponseEntity.noContent().build();
     }
 }
