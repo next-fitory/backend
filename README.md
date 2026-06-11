@@ -288,6 +288,34 @@ USING gin(name gin_trgm_ops);
 
 ---
 
+## 🛒 장바구니 상태 동기화 및 수량 제어
+
+담당: **한다현 (Product & Cart)**
+
+동일 상품의 중복 담기와 수량 변경 시 데이터 정합성을 보장하는 장바구니 상태 관리 로직을 구현했습니다.
+
+### 핵심 포인트
+
+- 장바구니 담기 시 동일 상품 존재 여부를 사전 조회하여 신규 INSERT / 수량 합산 UPDATE 분기 처리
+- `PATCH /api/carts/{id}` 로 수량 단독 변경 지원
+- 단건 삭제(`DELETE /api/carts/{id}`)와 전체 비우기(`DELETE /api/carts`)를 분리된 엔드포인트로 구현하여 오작동 방지
+
+```java
+Optional<CartItem> existing =
+    cartRepository.findByUserIdAndProductId(userId, productId);
+
+if (existing.isPresent()) {
+    cartRepository.updateQuantity(
+        existing.get().getId(),
+        existing.get().getQuantity() + request.getQuantity()
+    );
+} else {
+    cartRepository.insert(userId, productId, request.getQuantity());
+}
+```
+
+---
+
 ## ⚙️ IoC Container & 생성자 주입 (위상정렬 기반)
 
 담당: **박유빈 (Framework & Core)**
@@ -765,13 +793,81 @@ return objectMapper.readValue(request.getInputStream(), javaType);
 
 ---
 
-## 🚨 상품 검색 성능 최적화
+## 🚨 상품 검색 성능 최적화 (LIKE → pg_trgm)
 
 담당: **한다현 (Product & Cart)**
 
-- 상품 검색 인덱싱 전략 개선
-- 검색 응답 속도 최적화
-- 페이징 처리 개선 예정
+### 문제 상황
+
+초기 상품 검색은 `LIKE '%keyword%'` 패턴을 사용했습니다.
+Leading Wildcard로 인해 B-Tree 인덱스가 동작하지 않아 상품 테이블 전체를 Sequential Scan하는 구조였고,
+상품 수가 늘어날수록 검색 응답 시간이 선형적으로 증가하는 문제가 있었습니다.
+
+### 해결 방식
+
+PostgreSQL `pg_trgm` 확장과 GIN 인덱스를 적용하여 트라이그램(trigram) 기반 인덱스 검색으로 전환했습니다.
+
+```sql
+-- pg_trgm 확장 활성화
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+-- GIN 인덱스 생성
+CREATE INDEX idx_products_name_trgm
+ON products
+USING gin(name gin_trgm_ops);
+```
+
+jOOQ에서 `likeIgnoreCase()`를 사용하여 대소문자 무관 검색에서도 인덱스가 활성화되도록 구성했습니다.
+
+```java
+condition = condition.and(
+    PRODUCTS.NAME.likeIgnoreCase("%" + keyword + "%")
+);
+```
+
+### 결과
+
+- Sequential Scan 제거 → GIN Index Scan으로 전환
+- 부분 문자열 검색에서도 인덱스 활용 가능
+- 대용량 상품 데이터에서도 일정한 검색 응답 속도 유지
+
+---
+
+## 🚨 장바구니 중복 담기 및 수량 정합성 처리
+
+담당: **한다현 (Product & Cart)**
+
+### 문제 상황
+
+장바구니에 동일 상품을 여러 번 담을 경우 매번 새 행이 INSERT되어 같은 상품이 중복으로 쌓이는 문제가 발생했습니다.
+또한 수량 변경 요청(`PATCH`)과 삭제 요청(`DELETE`) 간 처리 로직이 혼재되어 있어 의도치 않은 데이터 삭제가 발생할 수 있는 구조였습니다.
+
+### 해결 방식
+
+장바구니 담기 전 동일 `(userId, productId)` 조합의 기존 항목 존재 여부를 조회하여 INSERT와 UPDATE를 명시적으로 분기 처리했습니다.
+수량 변경과 삭제 책임은 별도 엔드포인트로 완전히 분리했습니다.
+
+```java
+Optional<CartItem> existing =
+    cartRepository.findByUserIdAndProductId(userId, productId);
+
+if (existing.isPresent()) {
+    // 기존 항목: 수량 합산 UPDATE
+    cartRepository.updateQuantity(
+        existing.get().getId(),
+        existing.get().getQuantity() + request.getQuantity()
+    );
+} else {
+    // 신규 항목: INSERT
+    cartRepository.insert(userId, productId, request.getQuantity());
+}
+```
+
+### 결과
+
+- 동일 상품 중복 행 생성 방지
+- 수량 변경(`PATCH`)과 삭제(`DELETE`) 책임 분리로 오작동 방지
+- 장바구니 상태 정합성 보장
 
 <div align="right">
 
